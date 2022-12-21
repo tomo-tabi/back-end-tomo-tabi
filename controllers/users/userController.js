@@ -1,7 +1,7 @@
 const express = require('express');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
-const knex = require('../../db/index');
+const knex = require('../../db/knex');
 
 const UserController = {
   // Get the user informmation for the profile page
