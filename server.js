@@ -16,16 +16,16 @@ app.use(cors());
 app.use(express.json());
 app.use(timeout('5s'));
 
-// Initial server routes
+// Internal API routes
 app.use('/user', userRoutes);
 app.use('/trip', tripRoutes);
 app.use('/timeline', timelineRoutes);
 app.use('/timeline', expenseRoutes);
 
 // function to check if the request has timed out
-function haltOnTimedout(req, res, next) {
-  if (!req.timedout) next();
-}
+// function haltOnTimedout(req, res, next) {
+//   if (!req.timedout) next();
+// }
 
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
