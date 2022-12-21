@@ -7,8 +7,8 @@ exports.up = function(knex) {
 		table.increments("id").primary();
 		table.date("start_date").notNullable()
         table.date("end_date").notNullable()
-        table.integer("users_id").notNullable()
-		table.foreign("users_id").references("users.id")
+        table.integer("user_id").notNullable()
+		table.foreign("user_id").references("users.id")
 	});
 };
 
