@@ -4,12 +4,12 @@ const jwt = require('jsonwebtoken');
 
 // CREATE TOKEN
 
-const createTokens = user => {
+const createToken = user => {
   const accessToken = sign(
     { username: user.username, userid: user.id },
     process.env.ACCESS_TOKEN_SECRET
   );
-  res.json({ accessToken: accessToken });
+  return { accessToken: accessToken };
 };
 
 // AUTHENTICATE TOKEN
@@ -29,4 +29,4 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-module.exports = { createTokens, authenticateToken };
+module.exports = { createToken, authenticateToken };
