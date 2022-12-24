@@ -22,11 +22,13 @@ const authenticateToken = (req, res, next) => {
     return res.status(401).send('token not found');
   }
 
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = user;
+  try {
+    const { userid } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    req.body.userid = userid;
     next();
-  });
+  } catch (e) {
+    return res.status(401).send('invalid or expired token');
+  }
 };
 
 module.exports = { createToken, authenticateToken };
