@@ -3,9 +3,10 @@ const knex = require('../../db/knex');
 require('dotenv').config();
 
 const TripsController = {
+  // TODO: add limit
   getTrips: async (req, res) => {
     try {
-      const { userid } = req.params;
+      const { userid } = req.body;
       if (userid === undefined) {
         res.status(500).json({ message: 'user id is not defined' });
         return;
@@ -27,8 +28,7 @@ const TripsController = {
 
   createTrip: async (req, res) => {
     try {
-      const { userid } = req.params;
-      const { startDate, endDate } = req.body;
+      const { startDate, endDate, userid } = req.body;
 
       if (userid === undefined) {
         res.status(500).json({ message: 'user id is not defined' });
