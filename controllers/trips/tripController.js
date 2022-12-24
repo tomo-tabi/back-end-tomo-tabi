@@ -1,5 +1,5 @@
 const express = require('express');
-const knex = require('../../db/index');
+const knex = require('../../db/knex');
 require('dotenv').config();
 
 const TripsController = {
