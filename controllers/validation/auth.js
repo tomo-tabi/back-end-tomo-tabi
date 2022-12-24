@@ -1,5 +1,5 @@
 // JWT verification
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config({ path: '../../.env' });
 const jwt = require('jsonwebtoken');
 
 // CREATE TOKEN
