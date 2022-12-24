@@ -20,7 +20,7 @@ app.use(timeout('5s'));
 app.use('/user', userRoutes);
 app.use('/trip', tripRoutes);
 app.use('/timeline', timelineRoutes);
-app.use('/timeline', expenseRoutes);
+app.use('/expense', expenseRoutes);
 
 // function to check if the request has timed out
 // function haltOnTimedout(req, res, next) {
