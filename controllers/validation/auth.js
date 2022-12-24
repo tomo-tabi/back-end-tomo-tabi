@@ -4,12 +4,9 @@ const jwt = require('jsonwebtoken');
 
 // CREATE TOKEN
 
-const createToken = user => {
-  const accessToken = sign(
-    { username: user.username, userid: user.id },
-    process.env.ACCESS_TOKEN_SECRET
-  );
-  return { accessToken: accessToken };
+const createToken = userid => {
+  const token = jwt.sign({ userid }, process.env.ACCESS_TOKEN_SECRET);
+  return { token };
 };
 
 // AUTHENTICATE TOKEN
@@ -22,11 +19,13 @@ const authenticateToken = (req, res, next) => {
     return res.status(401).send('token not found');
   }
 
+  //
   try {
     const { userid } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     req.body.userid = userid;
     next();
   } catch (e) {
+    console.log(e);
     return res.status(401).send('invalid or expired token');
   }
 };
