@@ -6,8 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
-    "migrate": "npx knex migrate:latest",
-    "seed": "npx knex seed:run"
+    "create-migration": "npx knex --knexfile=./db/knexfile.js migrate:make",
+    "migrate": "npx knex migrate:latest --knexfile ./db/knexfile.js",
+    "seed": "knex seed:run --knexfile ./db/knexfile.js"
   },
   "repository": {
     "type": "git",
