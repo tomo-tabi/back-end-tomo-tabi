@@ -5,8 +5,12 @@ const jwt = require('jsonwebtoken');
 // CREATE TOKEN
 
 const createToken = userid => {
-  const token = jwt.sign({ userid }, process.env.ACCESS_TOKEN_SECRET);
-  return { token };
+  const token = jwt.sign(
+    { userid },
+    process.env.ACCESS_TOKEN_SECRET || 'my secret',
+    { expiresIn: '1h' }
+  );
+  return token;
 };
 
 // AUTHENTICATE TOKEN
@@ -19,7 +23,6 @@ const authenticateToken = (req, res, next) => {
     return res.status(401).send('token not found');
   }
 
-  //
   try {
     const { userid } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     req.body.userid = userid;
@@ -30,4 +33,7 @@ const authenticateToken = (req, res, next) => {
   }
 };
 
-module.exports = { createToken, authenticateToken };
+module.exports = {
+  createToken,
+  authenticateToken,
+};
