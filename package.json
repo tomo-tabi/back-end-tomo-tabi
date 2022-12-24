@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Ronin619/back-end-tomo-tabi.git"
+    "url": "git+https://github.com/tomo-tabi/back-end-tomo-tabi.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Ronin619/back-end-tomo-tabi/issues"
+    "url": "https://github.com/tomo-tabi/back-end-tomo-tabi/issues"
   },
-  "homepage": "https://github.com/Ronin619/back-end-tomo-tabi#readme",
+  "homepage": "https://github.com/tomo-tabi/back-end-tomo-tabi#readme",
   "dependencies": {
     "connect-timeout": "^1.9.0",
     "cors": "^2.8.5",
