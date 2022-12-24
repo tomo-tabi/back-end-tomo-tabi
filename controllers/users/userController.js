@@ -1,7 +1,9 @@
-const express = require('express');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const knex = require('../../db/knex');
+const auth = require('../validation/auth');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 const UserController = {
   // Get the user informmation for the profile page
@@ -31,7 +33,6 @@ const UserController = {
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
-      console.log(email, password);
 
       //Check if the email exists
       if (email === undefined) {
@@ -39,35 +40,23 @@ const UserController = {
         return;
       }
 
-      const data = await knex
-        .select('*')
-        .from('users')
-        .where({ email: email, password: password }); //Check if the user exists
+      const data = await knex.select('*').from('users').where({ email: email }); //Check if the user exists
 
-      console.log(data);
+      if (!data.length) return res.status(400).send('email not found');
 
-      //If the user exists, create the token and send the information
-      if (data.length > 0) {
-        const token = jwt.sign(
-          {
-            firstName: data[0]['email'],
-            lastName: data[0]['username'],
-            userid: data[0]['id'],
-          },
-          process.env.JWT_SECRET || 'my_secret',
-          {
-            expiresIn: '1h',
-          }
-        );
-        //Send back the id, the username and the token to the frontend so they can store it and keep for authentification
-        res.status(200).json({
-          token: token,
-          username: data[0]['username'],
-          userid: data[0]['id'],
-        });
-        return;
-      }
-      res.status(401).json({ error: 'Validation Failed' });
+      console.log(`login attempt by: ${data[0].email}`);
+
+      const valid = await bcrypt.compare(password, data[0].password);
+
+      if (!valid) return res.status(401).send('incorrect password');
+
+      const token = auth.createToken(data[0].id);
+      //Send back the username and token to the frontend so they can store it and keep for authentification
+      res.status(200).json({
+        token: token,
+        username: data[0]['username'],
+      });
+      return;
     } catch (error) {
       console.log(error);
       res.status(500).json({ message: 'Internal Server Error' });
@@ -77,30 +66,29 @@ const UserController = {
   signup: async (req, res) => {
     try {
       const { email, password, username } = req.body;
-      console.log(email, password, username);
+      console.log(email, username);
+
+      // hash password with bcrypt
+      const hash = await bcrypt.hash(password, saltRounds);
+
       const newUser = [
         {
           email: email,
-          password: password,
+          password: hash,
           username: username,
         },
       ];
       const data = await knex('users')
         .returning(['id', 'username'])
         .insert(newUser);
+      console.log('user created:');
       console.log(data);
 
-      const token = jwt.sign(
-        { email: email, username: username, userid: data[0]['id'] },
-        process.env.JWT_SECRET || 'my_secret',
-        {
-          expiresIn: '1h',
-        }
-      );
+      const token = auth.createToken(data[0].id);
+
       res.status(201).json({
         token: token,
         username: data[0]['username'],
-        userid: data[0]['id'],
       });
       return;
     } catch (error) {
@@ -108,6 +96,7 @@ const UserController = {
       res.status(500).json({ message: 'Internal Server Error' });
     }
   },
+
   //Update user information
   putUser: async (req, res) => {
     try {
