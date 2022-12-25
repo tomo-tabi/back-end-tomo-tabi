@@ -102,23 +102,20 @@ const UserController = {
   //Update user information
   putUser: async (req, res) => {
     try {
-      const { userid } = req.params;
-      const { email, password, username } = req.body;
-      console.log(userid);
+      const { userid, email, username } = req.body;
+      console.log(`updating information for userid ${userid}`);
 
-      if (userid === undefined) {
-        res.status(500).json({ message: 'user ID is undefined' });
-        return;
-      }
+      // check if there is a userid
+      if (!userid)
+        return res.status(500).json({ message: 'user ID is undefined' });
+
       const data = await knex('users')
+        .returning(['email', 'username'])
         .where({ id: userid })
         .update({
           email: email,
-          password: password,
           username: username,
-        })
-        .returning('*');
-
+        });
       // Send the updated information
       if (data.length > 0) {
         res.status(200).json(data[0]);
