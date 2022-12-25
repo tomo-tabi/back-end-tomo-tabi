@@ -1,7 +1,15 @@
-# /user
+checked boxes indicate the path has been tested in postman
 
-# /trip
+## /user
 
-# /timeline
+- [ ] GET - API_URL/user/:userid
+- [x] POST - API_URL/user/signup
+- [x] POST - API_URL/user/login
+- [ ] PUT - API_URL/user/update
+- [ ] DELETE - API_URL/user/delete
 
-# /expense
+## /trip
+
+## /timeline
+
+## /expense
