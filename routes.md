@@ -20,6 +20,13 @@ if userid is needed for a path it should be stored in the fetch request's header
 ## /trip
 
 - [ ] GET - API_URL/trip/
+  - userid stored in bearer token
+- [ ] POST - API_URL/trip/
+  - JSON body example:
+- [ ] PUT - API_URL/:tripID
+  - JSON body example:
+- [ ] DELETE - API_URL/
+  - JSON body example:
 
 ## /timeline
 
