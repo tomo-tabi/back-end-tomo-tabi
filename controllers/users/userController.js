@@ -9,7 +9,7 @@ const UserController = {
   // Get the user informmation for the profile page
   getUserById: async (req, res) => {
     try {
-      const { userid } = req.params;
+      const { userid } = req.body;
       console.log(userid);
 
       if (userid === undefined) {
@@ -17,7 +17,9 @@ const UserController = {
         return;
       }
       //Send back all the information from our DB
-      const data = await knex('users').select('*').where({ id: userid });
+      const data = await knex('users')
+        .select('email', 'username')
+        .where({ id: userid });
 
       if (data.length > 0) {
         res.status(200).json(data[0]);
