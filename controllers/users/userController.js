@@ -4,26 +4,33 @@ const auth = require('../validation/auth');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-// Get the user informmation for the profile page
+/**
+ * Respond to a GET request to API_URL/user/ with the email and username associated
+ * with the userid contained in the req.body.
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing a user's email and username
+ */
+
 const getUser = async function (req, res) {
   try {
+    // extract the userid from req.body
     const { userid } = req.body;
-    console.log(userid);
 
-    if (userid === undefined) {
-      res.status(500).json({ message: 'User is undefined' });
-      return;
-    }
-    //Send back all the information from our DB
+    // if there is no userid present, return an error message
+    if (!userid) return res.status(500).json({ message: 'User is undefined' });
+
+    // extract the user's email and username from the database
     const data = await knex('users')
       .select('email', 'username')
       .where({ id: userid });
 
-    if (data.length > 0) {
-      res.status(200).json(data[0]);
-      return;
-    }
-    res.status(404).json({ message: 'user not found' });
+    // if there is no data, return an error message
+    if (!data.length)
+      return res.status(404).json({ message: 'user information not found' });
+
+    // else, all is well, send the data
+    return res.status(200).json(data[0]);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal Server Error' });
