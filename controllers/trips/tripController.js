@@ -7,9 +7,8 @@ const TripsController = {
   getTrips: async (req, res) => {
     try {
       const { userid } = req.body;
-      if (userid === undefined) {
-        res.status(500).json({ message: 'user id is not defined' });
-        return;
+      if (!userid) {
+        return res.status(500).json({ message: 'user id is not defined' });
       }
 
       const data = await knex('trips').select('*').where({ user_id: userid });
@@ -30,9 +29,8 @@ const TripsController = {
     try {
       const { startDate, endDate, userid } = req.body;
 
-      if (userid === undefined) {
-        res.status(500).json({ message: 'user id is not defined' });
-        return;
+      if (!userid) {
+        return res.status(500).json({ message: 'user id is not defined' });
       }
 
       const data = await knex('trips')
@@ -88,7 +86,7 @@ const TripsController = {
     try {
       const { tripID, userID } = req.body;
 
-      if (exerciseid === undefined) {
+      if (tripID === undefined) {
         res.status(500).json({ message: 'trip id is not defined' });
         return;
       }
