@@ -18,7 +18,8 @@ const getUser = async function (req, res) {
     const { userid } = req.body;
 
     // if there is no userid present, return an error message
-    if (!userid) return res.status(500).json({ message: 'User is undefined' });
+    if (!userid)
+      return res.status(500).json({ message: 'needed variable is undefined' });
 
     // extract the user's email and username from the database
     const data = await knex('users')
@@ -29,7 +30,7 @@ const getUser = async function (req, res) {
     if (!data.length)
       return res.status(404).json({ message: 'user information not found' });
 
-    // else, all is well, send the data
+    // send the user information
     return res.status(200).json(data[0]);
   } catch (error) {
     console.log(error);
@@ -37,34 +38,46 @@ const getUser = async function (req, res) {
   }
 };
 
-//Get information from frontend and check if user exists and send the user id, username and jwt-token back.
+/**
+ * Respond to a POST request to API_URL/user/login with a jwt and username
+ * with the userid contained in the req.body.
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing a jwt and a username
+ */
+
 const login = async function (req, res) {
   try {
+    // extract the user's email and password from req.body
     const { email, password } = req.body;
 
-    //Check if the email exists
-    if (email === undefined) {
-      res.status(500).json({ message: 'email is not defined' });
-      return;
-    }
+    // confirm that the email and password are defined.
+    if (!email || !password)
+      return res.status(500).json({ message: 'needed variable is undefined' });
 
-    const data = await knex.select('*').from('users').where({ email: email }); //Check if the user exists
+    // extract the user information from the database
+    const data = await knex.select('*').from('users').where({ email: email });
 
-    if (!data.length) return res.status(400).send('email not found');
+    // confirm the user exists
+    if (!data.length)
+      return res.status(404).json({ message: 'email not found' });
 
     console.log(`login attempt by: ${data[0].email}`);
 
+    // use bcrypt to compare the raw password to the hashed password in the database
     const valid = await bcrypt.compare(password, data[0].password);
 
+    // if the password is incorrect exit the function
     if (!valid) return res.status(401).send('incorrect password');
 
+    // else, create a jwt token containing the user's id
     const token = auth.createToken(data[0].id);
-    //Send back the username and token to the frontend so they can store it and keep for authentification
-    res.status(200).json({
+
+    // Send the username and token
+    return res.status(200).json({
       token: token,
-      username: data[0]['username'],
+      username: data[0].username,
     });
-    return;
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal Server Error' });
