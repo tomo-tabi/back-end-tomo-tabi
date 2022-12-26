@@ -1,135 +1,198 @@
 require('dotenv').config();
-const jwt = require('jsonwebtoken');
 const knex = require('../../db/knex');
 const auth = require('../validation/auth');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
-const UserController = {
-  // Get the user informmation for the profile page
-  getUserById: async (req, res) => {
-    try {
-      const { userid } = req.body;
-      console.log(userid);
+/**
+ * Respond to a GET request to API_URL/user/ with the email and username associated
+ * with the userid contained in the req.body.
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing a user's email and username
+ */
 
-      if (userid === undefined) {
-        res.status(500).json({ message: 'User is undefined' });
-        return;
-      }
-      //Send back all the information from our DB
-      const data = await knex('users')
-        .select('email', 'username')
-        .where({ id: userid });
+const getUser = async function (req, res) {
+  try {
+    // extract the userid from req.body
+    const { userid } = req.body;
 
-      if (data.length > 0) {
-        res.status(200).json(data[0]);
-        return;
-      }
-      res.status(404).json({ message: 'user not found' });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: 'Internal Server Error' });
-    }
-  },
-  //Get information from frontend and check if user exists and send the user id, username and jwt-token back.
-  login: async (req, res) => {
-    try {
-      const { email, password } = req.body;
+    // if there is no userid present, return an error message
+    if (!userid)
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
 
-      //Check if the email exists
-      if (email === undefined) {
-        res.status(500).json({ message: 'email is not defined' });
-        return;
-      }
+    // extract the user's email and username from the database
+    const data = await knex('users')
+      .select('email', 'username')
+      .where({ id: userid });
 
-      const data = await knex.select('*').from('users').where({ email: email }); //Check if the user exists
+    // if there is no data, return an error message
+    if (!data.length)
+      return res.status(404).json({ message: 'user information not found' });
 
-      if (!data.length) return res.status(400).send('email not found');
-
-      console.log(`login attempt by: ${data[0].email}`);
-
-      const valid = await bcrypt.compare(password, data[0].password);
-
-      if (!valid) return res.status(401).send('incorrect password');
-
-      const token = auth.createToken(data[0].id);
-      //Send back the username and token to the frontend so they can store it and keep for authentification
-      res.status(200).json({
-        token: token,
-        username: data[0]['username'],
-      });
-      return;
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: 'Internal Server Error' });
-    }
-  },
-  //Create new user in the DB and send the user id, username and jwt-token back.
-  signup: async (req, res) => {
-    try {
-      const { email, password, username } = req.body;
-      console.log(email, username);
-
-      // hash password with bcrypt
-      const hash = await bcrypt.hash(password, saltRounds);
-
-      const newUser = [
-        {
-          email: email,
-          password: hash,
-          username: username,
-        },
-      ];
-      const data = await knex('users')
-        .returning(['id', 'username'])
-        .insert(newUser);
-      console.log('user created:');
-      console.log(data);
-
-      const token = auth.createToken(data[0].id);
-
-      res.status(201).json({
-        token: token,
-        username: data[0]['username'],
-      });
-      return;
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: 'Internal Server Error' });
-    }
-  },
-
-  //Update user information
-  putUser: async (req, res) => {
-    try {
-      const { userid, email, username } = req.body;
-      console.log(`updating information for userid ${userid}`);
-
-      // check if there is a userid
-      if (!userid)
-        return res.status(500).json({ message: 'user ID is undefined' });
-
-      const data = await knex('users')
-        .returning(['email', 'username'])
-        .where({ id: userid })
-        .update({
-          email: email,
-          username: username,
-        });
-      // Send the updated information
-      if (data.length > 0) {
-        res.status(200).json(data[0]);
-        return;
-      }
-      res.status(404).json({ message: 'Not found' });
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: 'Internal Server Error' });
-    }
-  },
-  deleteUser: async (req, res) => {
-    // stub
-  },
+    // send the user information
+    return res.status(200).json(data[0]);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
 
-module.exports = UserController;
+/**
+ * Respond to a POST request to API_URL/user/login with a jwt and username
+ * with the userid contained in the req.body.
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing a jwt and a username
+ */
+
+const login = async function (req, res) {
+  try {
+    // extract the user's email and password from req.body
+    const { email, password } = req.body;
+
+    // confirm that the email and password are defined.
+    if (!email || !password)
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
+
+    // extract the user information from the database
+    const data = await knex.select('*').from('users').where({ email: email });
+
+    // confirm the user exists
+    if (!data.length)
+      return res.status(404).json({ message: 'email not found' });
+
+    console.log(`login attempt by: ${data[0].email}`);
+
+    // use bcrypt to compare the raw password to the hashed password in the database
+    const valid = await bcrypt.compare(password, data[0].password);
+
+    // if the password is incorrect exit the function
+    if (!valid) return res.status(401).send('incorrect password');
+
+    // else, create a jwt token containing the user's id
+    const token = auth.createToken(data[0].id);
+
+    // Send the username and token
+    return res.status(200).json({
+      token: token,
+      username: data[0].username,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+/**
+ * Respond to a POST request to API_URL/user/signup with the user's username
+ * and a jwt containing the new users id
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing a jwt and a username
+ */
+
+const signup = async function (req, res) {
+  try {
+    // extract the users information from req.body
+    const { email, password, username } = req.body;
+
+    // confirm all required data is defined
+    if (!email || !password || !username)
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
+
+    // hash password with bcrypt
+    const hash = await bcrypt.hash(password, saltRounds);
+
+    // create a user object to insert into the users table
+    const newUser = {
+      email: email,
+      password: hash,
+      username: username,
+    };
+
+    // insert the new user into the users table
+    const data = await knex('users')
+      .returning(['id', 'username'])
+      .insert(newUser);
+    console.log('user created:');
+    console.log(data[0]);
+
+    // create a jwt token containing the user id
+    const token = auth.createToken(data[0].id);
+
+    // send the username and token
+    return res.status(201).json({
+      token: token,
+      username: data[0]['username'],
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+/**
+ * Respond to a PUT request to API_URL/user/update with the new username and email
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing a username and email
+ */
+
+const putUser = async function (req, res) {
+  try {
+    // extract all required information from req.body
+    const { userid, email, username } = req.body;
+
+    // confirm all required data is defined
+    if (!userid || !email || !username)
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
+
+    // update the user's information in the database
+    const data = await knex('users')
+      .returning(['email', 'username'])
+      .where({ id: userid })
+      .update({
+        email: email,
+        username: username,
+      });
+
+    // confirm new data exists
+    if (!data.length) {
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+
+    // send the data
+    res.status(200).json(data[0]);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+/**
+ * Respond to a DELETE request to API_URL/user/delete with a status of 200
+ * @todo implement this function
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing a 200 status code
+ */
+const deleteUser = async function (req, res) {
+  // stub
+};
+
+module.exports = {
+  getUser,
+  login,
+  signup,
+  putUser,
+  deleteUser,
+};
