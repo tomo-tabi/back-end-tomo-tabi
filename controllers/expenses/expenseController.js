@@ -53,7 +53,7 @@ const createExpense = async function (req, res) {
 
     // insert the new expense object into expenses table
     const data = await knex('expenses')
-      .returning(['item_name', 'username', 'money'])
+      .returning(['id', 'item_name', 'username', 'money'])
       .insert({
         user_id: userid,
         trip_id: tripid,
@@ -73,33 +73,40 @@ const createExpense = async function (req, res) {
   }
 };
 
+/**
+ * Respond to a PUT request to API_URL/expense/update with all information regarding
+ * the updated expense after updated said expense.
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing the updated expense object
+ */
+
 const updateExpense = async function (req, res) {
   try {
-    const { userID, tripID, itemName, username, money } = req.body;
+    // extract all required information from req.body
+    const { expenseid, itemName, username, money } = req.body;
 
-    //Update the expense using the trip ID
+    // update the expense using the expense id
     const data = await knex('expenses')
-      .where({ id: tripID })
+      .where({ id: expenseid })
       .update({
-        user_id: userID,
-        trip_id: tripID,
         item_name: itemName,
         username: username,
         money: money,
       })
       .returning('*');
 
-    // If the expense is updated correctly, send back the information from the trip
-    if (data.length > 0) {
-      res.status(200).json(data);
-      return;
-    }
-    res.status(404).json({ message: 'Trip not found' });
+    // confirm data has been saved in data
+    if (!data.length)
+      return res.status(500).json({ message: 'Internal Server Error' });
+
+    return res.status(200).json(data);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
 // Delete the expense from the DB for that trip
 const deleteExpense = async function (req, res) {
   try {
