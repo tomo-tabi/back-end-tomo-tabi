@@ -138,16 +138,25 @@ const signup = async function (req, res) {
   }
 };
 
-//Update user information
+/**
+ * Respond to a PUT request to API_URL/user/update with the new username and email
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing a username and email
+ */
+
 const putUser = async function (req, res) {
   try {
+    // extract all required information from req.body
     const { userid, email, username } = req.body;
-    console.log(`updating information for userid ${userid}`);
 
-    // check if there is a userid
-    if (!userid)
-      return res.status(500).json({ message: 'user ID is undefined' });
+    // confirm all required data is defined
+    if (!userid || !email || !username)
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
 
+    // update the user's information in the database
     const data = await knex('users')
       .returning(['email', 'username'])
       .where({ id: userid })
@@ -155,18 +164,27 @@ const putUser = async function (req, res) {
         email: email,
         username: username,
       });
-    // Send the updated information
-    if (data.length > 0) {
-      res.status(200).json(data[0]);
-      return;
+
+    // confirm new data exists
+    if (!data.length) {
+      return res.status(500).json({ message: 'Internal server error' });
     }
-    res.status(404).json({ message: 'Not found' });
+
+    // send the data
+    res.status(200).json(data[0]);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
+/**
+ * Respond to a DELETE request to API_URL/user/delete with a status of 200
+ * @todo implement this function
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing a 200 status code
+ */
 const deleteUser = async function (req, res) {
   // stub
 };
