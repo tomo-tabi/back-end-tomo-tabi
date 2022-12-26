@@ -10,7 +10,7 @@ router.post('/signup', userController.signup);
 // require jwt authentification for all subsequent requests
 router.use(authenticateToken);
 
-router.get('/', userController.getUserById);
+router.get('/', userController.getUser);
 router.put('/update', userController.putUser);
 router.delete('/delete', userController.deleteUser);
 
