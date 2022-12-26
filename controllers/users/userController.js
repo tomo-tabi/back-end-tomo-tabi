@@ -19,7 +19,9 @@ const getUser = async function (req, res) {
 
     // if there is no userid present, return an error message
     if (!userid)
-      return res.status(500).json({ message: 'needed variable is undefined' });
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
 
     // extract the user's email and username from the database
     const data = await knex('users')
@@ -53,7 +55,9 @@ const login = async function (req, res) {
 
     // confirm that the email and password are defined.
     if (!email || !password)
-      return res.status(500).json({ message: 'needed variable is undefined' });
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
 
     // extract the user information from the database
     const data = await knex.select('*').from('users').where({ email: email });
@@ -84,35 +88,50 @@ const login = async function (req, res) {
   }
 };
 
-//Create new user in the DB and send the user id, username and jwt-token back.
+/**
+ * Respond to a POST request to API_URL/user/signup with the user's username
+ * and a jwt containing the new users id
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing a jwt and a username
+ */
+
 const signup = async function (req, res) {
   try {
+    // extract the users information from req.body
     const { email, password, username } = req.body;
-    console.log(email, username);
+
+    // confirm all required data is defined
+    if (!email || !password || !username)
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
 
     // hash password with bcrypt
     const hash = await bcrypt.hash(password, saltRounds);
 
-    const newUser = [
-      {
-        email: email,
-        password: hash,
-        username: username,
-      },
-    ];
+    // create a user object to insert into the users table
+    const newUser = {
+      email: email,
+      password: hash,
+      username: username,
+    };
+
+    // insert the new user into the users table
     const data = await knex('users')
       .returning(['id', 'username'])
       .insert(newUser);
     console.log('user created:');
-    console.log(data);
+    console.log(data[0]);
 
+    // create a jwt token containing the user id
     const token = auth.createToken(data[0].id);
 
-    res.status(201).json({
+    // send the username and token
+    return res.status(201).json({
       token: token,
       username: data[0]['username'],
     });
-    return;
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal Server Error' });
