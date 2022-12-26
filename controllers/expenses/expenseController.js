@@ -12,12 +12,11 @@ require('dotenv').config();
 const getExpenses = async function (req, res) {
   try {
     // extract the trip id from req.params
-    const { tripID } = req.params;
+    const { tripid } = req.params;
 
     // confirm the trip id is defined
-    if (!tripID) {
+    if (!tripid)
       return res.status(500).json({ message: 'trip id is undefined' });
-    }
 
     // extract the expenses associated with the trip id from the database
     const data = await knex('expenses').select('*').where({ trip_id: tripID });
@@ -43,23 +42,32 @@ const getExpenses = async function (req, res) {
 
 const createExpense = async function (req, res) {
   try {
-    const { userID, tripID, itemName, username, money } = req.body;
+    // extract required information from req.body
+    const { userid, tripid, itemName, username, money } = req.body;
 
+    // confirm all required information is defined
+    if (!userid || !tripid || !itemName || !username || !money)
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
+
+    // insert the new expense object into expenses table
     const data = await knex('expenses')
+      .returning(['item_name', 'username', 'money'])
       .insert({
-        user_id: userID,
-        trip_id: tripID,
+        user_id: userid,
+        trip_id: tripid,
         item_name: itemName,
         username: username,
         money: money,
-      })
-      .returning('*');
+      });
 
-    //If the expense is created, send back the information of the expense to the frontend
-    if (data.length > 0) {
-      res.status(200).json(data);
-      return;
-    }
+    // confirm the new data has been saved in data
+    if (!data.length)
+      return res.status(500).json({ message: 'Internal Server Error' });
+
+    // send the data
+    return res.status(200).json(data);
   } catch (error) {
     res.status(500).json({ message: 'Internal Server Error' });
   }
