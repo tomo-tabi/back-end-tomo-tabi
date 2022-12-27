@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const expenseController = require('../../controllers/expenses/expenseController');
-const { authenticateToken } = require('../../middleware/authorization/auth');
+const { authenticateToken } = require('../../middleware/auth');
 
 // require jwt authentification for all subsequent requests
 router.use(authenticateToken);

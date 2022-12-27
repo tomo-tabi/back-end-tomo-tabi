@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const tripController = require('../../controllers/trips/tripController');
-const { authenticateToken } = require('../../middleware/authorization/auth');
+const { authenticateToken } = require('../../middleware/auth');
 
 // TODO: add limit
 router.get('/', authenticateToken, tripController.getTrips);

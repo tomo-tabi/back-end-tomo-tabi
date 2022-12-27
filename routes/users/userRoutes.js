@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../../controllers/users/userController');
-const { authenticateToken } = require('../../middleware/authorization/auth');
+const { authenticateToken } = require('../../middleware/auth');
 
 // routes that don't require jwt authentication
 router.post('/login', userController.login);
