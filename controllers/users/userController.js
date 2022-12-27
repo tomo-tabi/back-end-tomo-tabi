@@ -1,6 +1,6 @@
 require('dotenv').config();
 const knex = require('../../db/knex');
-const auth = require('../validation/auth');
+const auth = require('../../middleware/auth');
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
@@ -53,11 +53,9 @@ const login = async function (req, res) {
     // extract the user's email and password from req.body
     const { email, password } = req.body;
 
-    // confirm that the email and password are defined.
-    if (!email || !password)
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    // confirm that the password is defined.
+    if (!password)
+      return res.status(500).json({ message: 'password is undefined' });
 
     // extract the user information from the database
     const data = await knex.select('*').from('users').where({ email: email });
@@ -74,7 +72,7 @@ const login = async function (req, res) {
     // if the password is incorrect exit the function
     if (!valid) return res.status(401).send('incorrect password');
 
-    // else, create a jwt token containing the user's id
+    // create a jwt token containing the user's id
     const token = auth.createToken(data[0].id);
 
     // Send the username and token
@@ -102,7 +100,7 @@ const signup = async function (req, res) {
     const { email, password, username } = req.body;
 
     // confirm all required data is defined
-    if (!email || !password || !username)
+    if (!password || !username)
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
@@ -151,7 +149,7 @@ const putUser = async function (req, res) {
     const { userid, email, username } = req.body;
 
     // confirm all required data is defined
-    if (!userid || !email || !username)
+    if (!userid || !username)
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
