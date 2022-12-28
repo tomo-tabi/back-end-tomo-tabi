@@ -2,13 +2,13 @@ const knex = require('../../db/knex');
 require('dotenv').config();
 
 /**
- * Respond to a GET request to API_URL/user/ with the email and username associated
- * with the userid contained in the req.body.
+ * Respond to a GET request to API_URL/trip/
  * @todo add limit version
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
- * @returns {Response} returns an array of trip's associated with the userid
+ * @returns {Response} response Object containing an array of trips associated with the userid
  */
+
 const getTrips = async function (req, res) {
   try {
     // extract userid from req.body
@@ -36,27 +36,45 @@ const getTrips = async function (req, res) {
   }
 };
 
+/**
+ * Respond to a POST request to API_URL/trip/
+ * @todo add limit version
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} response Object containing the posted trip
+ */
+
 const createTrip = async function (req, res) {
   try {
-    const { startDate, endDate, userid } = req.body;
+    // extract required information from req.body
+    const { startDate, endDate, userid, name } = req.body;
 
-    if (!userid) {
-      return res.status(500).json({ message: 'user id is not defined' });
-    }
+    // verify all required data is defined
+    if (!userid || !startDate || !endDate || !name)
+      return res.status(500).json({ message: 'required info is not defined' });
 
-    const data = await knex('trips')
+    // insert the data into trips
+    const trip = await knex('trips')
       .insert({
         start_date: startDate,
         end_date: endDate,
-        user_id: userid,
+        name: name,
       })
       .returning('*');
 
-    //If the trip is created, send back the information of the trip to the frontend
-    if (data.length > 0) {
-      res.status(200).json(data);
-      return;
-    }
+    // if trip insert fails, send status code 500 and exit function
+    if (!trip.length) return res.status(500);
+
+    // link the user to the trip on the users_trips join table
+    const join = await knex('users_trips')
+      .returning('*')
+      .insert({ user_id: userid, trip_id: trip[0].id });
+
+    // if join insert fails send status code 500
+    if (!join.length) return res.status(500);
+
+    // send the trip info to the front end
+    return res.status(200).json(trip[0]);
   } catch (error) {
     res.status(500).json({ message: 'Internal Server Error' });
   }

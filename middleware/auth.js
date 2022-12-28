@@ -8,7 +8,7 @@ const createToken = userid => {
   const token = jwt.sign(
     { userid },
     process.env.ACCESS_TOKEN_SECRET || 'my secret',
-    { expiresIn: '1h' }
+    { expiresIn: '7d' }
   );
   return token;
 };
