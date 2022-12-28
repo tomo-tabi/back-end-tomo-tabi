@@ -88,7 +88,7 @@ const createTrip = async function (req, res) {
 
 const updateTrip = async function (req, res) {
   try {
-    // extract infromastion from req.params and req.body
+    // extract information from req.params and req.body
     const { tripID } = req.params;
     const { startDate, endDate, name } = req.body;
 
