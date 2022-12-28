@@ -3,7 +3,7 @@ require('dotenv').config();
 
 /**
  * Respond to a GET request to API_URL/trip/
- * @todo add limit version
+ * @todo #63 add limit version
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
  * @returns {Response} response Object containing an array of trips associated with the userid
@@ -38,7 +38,6 @@ const getTrips = async function (req, res) {
 
 /**
  * Respond to a POST request to API_URL/trip/
- * @todo add limit version
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
  * @returns {Response} response Object containing the posted trip
@@ -80,52 +79,72 @@ const createTrip = async function (req, res) {
   }
 };
 
+/**
+ * Respond to a PUT request to API_URL/trip/:tripID
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} response Object containing the updated trip
+ */
+
 const updateTrip = async function (req, res) {
   try {
+    // extract infromastion from req.params and req.body
     const { tripID } = req.params;
-    const { startDate, endDate, userid } = req.body;
-    // console.log(exerciseid);
-    if (userid === undefined) {
-      res.status(500).json({ message: 'user id is undefined' });
-      return;
-    }
+    const { startDate, endDate, name } = req.body;
+
+    // verify all needed data is defined
+    if (!tripID || !startDate || !endDate || !name)
+      return res.status(500).json({ message: 'required info is not defined' });
+
     //Update the trip using the trip ID
     const data = await knex('trips')
       .where({ id: tripID })
       .update({
         start_date: startDate,
         end_date: endDate,
-        user_id: userid,
+        name: name,
       })
       .returning('*');
 
-    // If the trip is updated correctly, send back the information from the trip
-    if (data.length > 0) {
-      res.status(200).json(data);
-      return;
-    }
-    res.status(404).json({ message: 'Trip not found' });
+    // if trips insert fails, send status code 404
+    if (!data.length) return res.status(404);
+
+    // send the new data back
+    return res.status(200).send(data[0]);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
-// Delete the trip from the DB for that user
+
+/**
+ * Respond to a DELETE request to API_URL/trip/tripID by removing
+ * the users_trips join table item connecting them.
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} response status 200
+ */
 const deleteTrip = async function (req, res) {
   try {
-    const { tripID, userID } = req.body;
+    // extract data from req.params and req.body
+    const { tripID } = req.params;
+    const { userid } = req.body;
 
-    if (tripID === undefined) {
-      res.status(500).json({ message: 'trip id is not defined' });
-      return;
-    }
+    // confirm all needed data is defined
+    if (!tripID || !userid)
+      return res.status(500).json({ message: 'required info is not defined' });
 
-    await knex('trips')
-      .where({ id: tripID })
-      .andWhere({ user_id: userID })
-      .del();
+    const data = await knex('users_trips')
+      .where({ trip_id: tripID, user_id: userid })
+      .del(['id']);
 
-    res.status(200);
+    // confirm an item has been deleted
+    if (!data.length) return res.sendStatus(404);
+
+    console.log(`users_trips id: ${data[0].id} deleted`);
+
+    // send status 200
+    res.sendStatus(200);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal server error' });
