@@ -177,6 +177,23 @@ const putUser = async function (req, res) {
 };
 
 /**
+ * Respond to a PUT request to API_URL/user/password with a status of 200
+ * @todo implement this function
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing a 200 status code
+ */
+
+const putPassword = async function (req, res) {
+  // possible steps
+  // user must submit existing password to change it.
+  // {password, newPassword, userid}
+  // check if password is correct with bcrypt
+  // if correct, hash the newPassword with bcrypt and update the user
+  // send back new jwt containing userid
+};
+
+/**
  * Respond to a DELETE request to API_URL/user/delete with a status of 200
  * @todo implement this function
  * @param  {Request}  req Request object
@@ -192,5 +209,6 @@ module.exports = {
   login,
   signup,
   putUser,
+  putPassword,
   deleteUser,
 };

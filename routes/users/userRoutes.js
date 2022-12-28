@@ -13,6 +13,7 @@ router.use(authenticateToken);
 
 router.get('/', userCtrl.getUser);
 router.put('/update', emailFormat, emailNotExists, userCtrl.putUser);
+router.put('/password', userCtrl.putPassword);
 router.delete('/delete', userCtrl.deleteUser);
 
 module.exports = router;
