@@ -7,7 +7,7 @@ const { authenticateToken } = require('../../middleware/auth');
 router.use(authenticateToken);
 
 // routes
-router.get('/', authenticateToken, tripCtrl.getTrips);
+router.get('/', tripCtrl.getTrips);
 router.post('/', tripCtrl.createTrip);
 router.put('/:tripID', tripCtrl.updateTrip);
 router.delete('/:tripID', tripCtrl.deleteTrip);
