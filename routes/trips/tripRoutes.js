@@ -9,7 +9,7 @@ router.use(authenticateToken);
 // routes
 router.get('/', tripCtrl.getTrips);
 router.post('/', tripCtrl.createTrip);
-router.put('/:tripID', tripCtrl.updateTrip);
-router.delete('/:tripID', tripCtrl.deleteTrip);
+router.put('/:tripid', tripCtrl.updateTrip);
+router.delete('/:tripid', tripCtrl.deleteTrip);
 
 module.exports = router;

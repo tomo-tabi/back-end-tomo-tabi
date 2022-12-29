@@ -88,16 +88,16 @@ const createTrip = async function (req, res) {
 const updateTrip = async function (req, res) {
   try {
     // extract information from req.params and req.body
-    const { tripID } = req.params;
+    const { tripid } = req.params;
     const { startDate, endDate, name } = req.body;
 
     // verify all needed data is defined
-    if (!tripID || !startDate || !endDate || !name)
+    if (!tripid || !startDate || !endDate || !name)
       return res.status(500).json({ message: 'required info is not defined' });
 
     //Update the trip using the trip ID
     const data = await knex('trips')
-      .where({ id: tripID })
+      .where({ id: tripid })
       .update({
         start_date: startDate,
         end_date: endDate,
@@ -126,15 +126,15 @@ const updateTrip = async function (req, res) {
 const deleteTrip = async function (req, res) {
   try {
     // extract data from req.params and req.body
-    const { tripID } = req.params;
+    const { tripid } = req.params;
     const { userid } = req.body;
 
     // confirm all needed data is defined
-    if (!tripID || !userid)
+    if (!tripid || !userid)
       return res.status(500).json({ message: 'required info is not defined' });
 
     const data = await knex('users_trips')
-      .where({ trip_id: tripID, user_id: userid })
+      .where({ trip_id: tripid, user_id: userid })
       .del(['id']);
 
     // confirm an item has been deleted
