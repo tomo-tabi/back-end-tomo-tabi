@@ -1,5 +1,4 @@
 const knex = require('../../db/knex');
-require('dotenv').config();
 
 /**
  * Respond to a GET request to API_URL/trip/
