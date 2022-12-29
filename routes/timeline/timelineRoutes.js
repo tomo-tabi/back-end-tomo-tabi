@@ -6,6 +6,7 @@ const { authenticateToken } = require('../../middleware/auth');
 // require jwt authentication for all subsequent requests
 router.use(authenticateToken);
 
+router.get('/:tripid', timelineCtrl.getEvents);
 router.post('/create', timelineCtrl.createEvent);
 
 module.exports = router;
