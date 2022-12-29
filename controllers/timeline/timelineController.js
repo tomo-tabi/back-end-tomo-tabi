@@ -1,5 +1,12 @@
 const knex = require('../../db/knex');
 
+/**
+ * Respond to a GET request to API_URL/timeline/:tripid with all events associated with the trip
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing an array of events
+ */
+
 const getEvents = async function (req, res) {
   try {
     // extract required info from req.body and req.params
@@ -39,7 +46,7 @@ const getEvents = async function (req, res) {
 
 /**
  * Respond to a POST request to API_URL/timeline/create with all information regarding
- * the new expense.
+ * the new event.
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
  * @returns {Response} returns an http response containing the new expense object
