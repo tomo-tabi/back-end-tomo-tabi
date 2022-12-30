@@ -63,7 +63,7 @@ const createEvent = async function (req, res) {
         .status(500)
         .json({ message: 'required variable is undefined' });
 
-    // insert the new expense object into expenses table
+    // insert the new event object into trips_events table
     const data = await knex('trips_events')
       .returning(['id', 'event_name', 'event_date'])
       .insert({
@@ -84,7 +84,57 @@ const createEvent = async function (req, res) {
   }
 };
 
+/**
+ * Respond to a PUT request to API_URL/timeline/create with info on how to
+ * update the events
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing the updated expense object
+ */
+
+const updateEvent = async function (req, res) {
+  try {
+    // extract required information from req.body
+    const { eventid } = req.params;
+    const { userid, tripid, eventName, eventDate } = req.body;
+
+    // confirm all required information is defined
+    if (!userid || !tripid || !eventid || !eventName || !eventDate)
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
+
+    // confirm user is connected to trip TODO: make this middleware?
+    const authorized = await knex
+      .select(null)
+      .from('users_trips')
+      .where({ user_id: userid, trip_id: tripid });
+
+    if (!authorized.length) return res.sendStatus(403);
+
+    // update the event row
+    const data = await knex('trips_events')
+      .returning(['id', 'event_name', 'event_date'])
+      .where('id', eventid)
+      .update({
+        event_name: eventName,
+        event_date: eventDate,
+      });
+
+    // confirm the new data has been saved in data
+    if (!data.length)
+      return res.status(500).json({ message: 'Internal Server Error' });
+
+    // send the data
+    return res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   getEvents,
   createEvent,
+  updateEvent,
 };
