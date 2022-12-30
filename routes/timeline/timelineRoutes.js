@@ -9,5 +9,6 @@ router.use(authenticateToken);
 router.get('/:tripid', timelineCtrl.getEvents);
 router.post('/create', timelineCtrl.createEvent);
 router.put('/update/:eventid', timelineCtrl.updateEvent);
+router.delete('/delete/:eventid', timelineCtrl.deleteEvent);
 
 module.exports = router;
