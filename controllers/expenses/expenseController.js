@@ -1,6 +1,4 @@
-const express = require('express');
 const knex = require('../../db/knex');
-require('dotenv').config();
 
 /**
  * Respond to a GET request to API_URL/expense/:tripID with an array of expense objects

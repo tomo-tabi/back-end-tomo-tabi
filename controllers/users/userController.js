@@ -1,4 +1,3 @@
-require('dotenv').config();
 const knex = require('../../db/knex');
 const auth = require('../../middleware/auth');
 const bcrypt = require('bcrypt');
