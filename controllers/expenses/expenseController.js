@@ -11,7 +11,6 @@ const getExpenses = async function (req, res) {
   try {
     // extract the trip id from req.params
     const { tripid } = req.params;
-    const { userid } = req.body;
 
     // confirm the trip id is defined
     if (!tripid)
