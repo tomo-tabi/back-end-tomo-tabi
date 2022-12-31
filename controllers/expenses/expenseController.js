@@ -181,40 +181,52 @@ const deleteExpense = async function (req, res) {
   }
 };
 
+/**
+ * Respond to a GET request to API_URL/expense/average/:tripid with status code 200
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http status code
+ */
+
 const getAverageExpense = async function (req, res) {
   try {
+    // extract info from req.params
     const { tripid } = req.params;
-    if (tripid === undefined) {
-      res.status(500).json({ message: 'trip id is undefined' });
-      return;
-    }
 
+    // confirm info is defined
+    if (!tripid)
+      return res.status(500).json({ message: 'trip id is undefined' });
+
+    // extract all expenses related to trip from db
     const data = await knex('expenses').select('*').where({ trip_id: tripid });
 
-    //If the trip has expeneses in the DB, calculate the average
-    //I dont know if this works yet, I need to check.
-    if (data.length > 0) {
-      const helperObject = {};
-      helperObject.numUsers = 0;
-      helperObject.totalMoney = 0;
-      for (let i = 0; i < data.length; i++) {
-        if (!helperObject[data[i][user_id]]) {
-          helperObject[data[i][user_id]] = data[i][money];
-          helperObject.numUsers += 1;
-          helperObject.totalMoney += data[i][money];
-        } else {
-          helperObject[data[i][user_id]] += data[i][money];
-          helperObject.totalMoney += data[i][money];
-        }
+    // confirm data exists
+    if (!data.length) return res.sendStatus(404);
+
+    // initialize helper object
+    const helperObject = { totalMoney: 0, numUsers: 0 };
+    for (let i = 0; i < data.length; i++) {
+      // if the user hasn't been encountered yet add it and it's values to the object
+      if (!helperObject[data[i].user_id]) {
+        helperObject[data[i].user_id] = Number(data[i].money);
+        helperObject.numUsers += 1;
+        helperObject.totalMoney += Number(data[i].money);
       }
-      const averageMoney = helperObject.totalMoney / helperObject.numUsers;
-      res.status(200).json(averageMoney);
-      return;
+      // otherwise, add to the existing values
+      else {
+        helperObject[data[i].user_id] += Number(data[i].money);
+        helperObject.totalMoney += Number(data[i].money);
+      }
     }
-    res.status(404).json({ message: 'not found' });
+
+    // calculate the average expense for the trip
+    const averageMoney = helperObject.totalMoney / helperObject.numUsers;
+
+    // send the amount
+    return res.status(200).json(averageMoney);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.sendStatus(500);
   }
 };
 

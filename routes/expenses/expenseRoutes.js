@@ -10,7 +10,7 @@ router.use(authenticateToken);
 router.get('/:tripid', userToTrip, expenseCtrl.getExpenses);
 router.post('/create', userToTrip, expenseCtrl.createExpense);
 router.put('/update/:expenseid', expenseCtrl.updateExpense);
-router.delete('/delete/:expenseid', expenseCtrl.deleteExpense);
-router.get('/:tripid/average', userToTrip, expenseCtrl.getAverageExpense);
+router.delete('/delete/:expenseid', userToTrip, expenseCtrl.deleteExpense);
+router.get('/average/:tripid', userToTrip, expenseCtrl.getAverageExpense);
 
 module.exports = router;
