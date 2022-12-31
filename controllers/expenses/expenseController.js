@@ -17,7 +17,7 @@ const getExpenses = async function (req, res) {
       return res.status(500).json({ message: 'trip id is undefined' });
 
     // extract the expenses associated with the trip id from the database
-    const data = await knex('expenses').select('*').where({ trip_id: tripID });
+    const data = await knex('expenses').select('*').where({ trip_id: tripid });
 
     // if there are no expenses return status code 204 No Content
     if (!data.length) return res.status(204).json({ message: 'No Content' });
@@ -41,24 +41,42 @@ const getExpenses = async function (req, res) {
 const createExpense = async function (req, res) {
   try {
     // extract required information from req.body
-    const { userid, tripid, itemName, username, money } = req.body;
+    const { userid, tripid, itemName, money } = req.body;
+    let { purchaserid } = req.body;
+
+    // if a purchaser has been specified, use that instead of userid
+    purchaserid = purchaserid ? purchaserid : userid;
 
     // confirm all required information is defined
-    if (!userid || !tripid || !itemName || !username || !money)
+    if (!purchaserid || !tripid || !itemName || !money)
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
 
-    // insert the new expense object into expenses table
-    const data = await knex('expenses')
-      .returning(['id', 'item_name', 'username', 'money'])
-      .insert({
-        user_id: userid,
-        trip_id: tripid,
-        item_name: itemName,
-        username: username,
-        money: money,
-      });
+    const data = await knex.transaction(async trx => {
+      // insert the new expense object into expenses table
+      const id = await knex('expenses')
+        .insert(
+          {
+            user_id: purchaserid,
+            trip_id: tripid,
+            item_name: itemName,
+            money: money,
+          },
+          'id'
+        )
+        .transacting(trx);
+
+      // extract new data from users - expenses join table
+      const joinData = await knex
+        .select(['expenses.id', 'item_name', 'users.username', 'money'])
+        .from('expenses')
+        .join('users', 'user_id', 'users.id')
+        .where('expenses.id', id[0].id)
+        .transacting(trx);
+
+      return joinData;
+    });
 
     // confirm the new data has been saved in data
     if (!data.length)
@@ -67,6 +85,7 @@ const createExpense = async function (req, res) {
     // send the data
     return res.status(200).json(data);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
@@ -82,17 +101,43 @@ const createExpense = async function (req, res) {
 const updateExpense = async function (req, res) {
   try {
     // extract all required information from req.body
-    const { expenseid, itemName, username, money } = req.body;
+    const { expenseid } = req.params;
+    const { itemName, money } = req.body;
+    let { purchaserid } = req.body;
 
-    // update the expense using the expense id
-    const data = await knex('expenses')
-      .where({ id: expenseid })
-      .update({
-        item_name: itemName,
-        username: username,
-        money: money,
-      })
-      .returning('*');
+    // if a purchaser has been specified, use that instead of userid
+    purchaserid = purchaserid ? purchaserid : userid;
+
+    // confirm all required information is defined
+    if (!purchaserid || !itemName || !money || !expenseid)
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
+
+    const data = await knex.transaction(async trx => {
+      // update expense using expenseid
+      const id = await knex('expenses')
+        .where('id', expenseid)
+        .update(
+          {
+            item_name: itemName,
+            user_id: purchaserid,
+            money: money,
+          },
+          ['id']
+        )
+        .transacting(trx);
+
+      // extract new data from users - expenses join table
+      const joinData = await knex
+        .select(['expenses.id', 'item_name', 'users.username', 'money'])
+        .from('expenses')
+        .join('users', 'user_id', 'users.id')
+        .where('expenses.id', id[0].id)
+        .transacting(trx);
+
+      return joinData;
+    });
 
     // confirm data has been saved in data
     if (!data.length)
@@ -105,57 +150,83 @@ const updateExpense = async function (req, res) {
   }
 };
 
-// Delete the expense from the DB for that trip
+/**
+ * Respond to a DELETE request to API_URL/expense/delete/:expenseid with status code 200
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http status code
+ */
+
 const deleteExpense = async function (req, res) {
   try {
-    const { tripID, expenseID } = req.body;
+    // extract info from req.body and req.params
+    const { expenseid } = req.params;
+    const { tripid } = req.body;
 
-    await knex('expenses')
-      .where({ id: expenseID })
-      .andWhere({ trip_id: tripID })
-      .del();
+    // confirm all required information is defined
+    if (!expenseid) return res.sendStatus(500);
 
-    res.status(200);
+    // delete the expense
+    const data = await knex('expenses')
+      .where({ id: expenseid, trip_id: tripid })
+      .del(['id']);
+
+    // ensure data has a deleted item id
+    if (!data.length) return res.sendStatus(404);
+
+    return res.sendStatus(200);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.sendStatus(500);
   }
 };
 
+/**
+ * Respond to a GET request to API_URL/expense/average/:tripid with status code 200
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http status code
+ */
+
 const getAverageExpense = async function (req, res) {
   try {
-    const { tripID } = req.params;
-    if (tripID === undefined) {
-      res.status(500).json({ message: 'trip id is undefined' });
-      return;
-    }
+    // extract info from req.params
+    const { tripid } = req.params;
 
-    const data = await knex('expenses').select('*').where({ trip_id: tripID });
+    // confirm info is defined
+    if (!tripid)
+      return res.status(500).json({ message: 'trip id is undefined' });
 
-    //If the trip has expeneses in the DB, calculate the average
-    //I dont know if this works yet, I need to check.
-    if (data.length > 0) {
-      const helperObject = {};
-      helperObject.numUsers = 0;
-      helperObject.totalMoney = 0;
-      for (let i = 0; i < data.length; i++) {
-        if (!helperObject[data[i][user_id]]) {
-          helperObject[data[i][user_id]] = data[i][money];
-          helperObject.numUsers += 1;
-          helperObject.totalMoney += data[i][money];
-        } else {
-          helperObject[data[i][user_id]] += data[i][money];
-          helperObject.totalMoney += data[i][money];
-        }
+    // extract all expenses related to trip from db
+    const data = await knex('expenses').select('*').where({ trip_id: tripid });
+
+    // confirm data exists
+    if (!data.length) return res.sendStatus(404);
+
+    // initialize helper object
+    const helperObject = { totalMoney: 0, numUsers: 0 };
+    for (let i = 0; i < data.length; i++) {
+      // if the user hasn't been encountered yet add it and it's values to the object
+      if (!helperObject[data[i].user_id]) {
+        helperObject[data[i].user_id] = Number(data[i].money);
+        helperObject.numUsers += 1;
+        helperObject.totalMoney += Number(data[i].money);
       }
-      const averageMoney = helperObject.totalMoney / helperObject.numUsers;
-      res.status(200).json(averageMoney);
-      return;
+      // otherwise, add to the existing values
+      else {
+        helperObject[data[i].user_id] += Number(data[i].money);
+        helperObject.totalMoney += Number(data[i].money);
+      }
     }
-    res.status(404).json({ message: 'not found' });
+
+    // calculate the average expense for the trip
+    const averageMoney = helperObject.totalMoney / helperObject.numUsers;
+
+    // send the amount
+    return res.status(200).json(averageMoney);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.sendStatus(500);
   }
 };
 

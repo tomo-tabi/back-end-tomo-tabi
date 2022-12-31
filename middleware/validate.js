@@ -45,7 +45,31 @@ const emailNotExists = async function (req, res, next) {
   }
 };
 
+const userToTrip = async function (req, res, next) {
+  try {
+    // extract user and trip from req.body or req.params
+    const { userid } = req.body;
+    const { tripid } = req.body.tripid ? req.body : req.params;
+
+    // check if pair exists
+    const exists = await knex
+      .select(null)
+      .from('users_trips')
+      .where({ user_id: userid, trip_id: tripid });
+
+    // if no connection response with status code 403
+    if (!exists.length) return res.sendStatus(403);
+
+    // all is well
+    next();
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+};
+
 module.exports = {
   emailFormat,
   emailNotExists,
+  userToTrip,
 };

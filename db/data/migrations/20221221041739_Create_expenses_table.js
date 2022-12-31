@@ -3,9 +3,6 @@
  * @returns { Promise<void> }
  */
 
-//We should create a new migartion and update this table to have a trip id column
-//In the temp file I wrote the code as if we already had this value with the name trip_id
-
 exports.up = function (knex) {
   return knex.schema.createTable('expenses', function (table) {
     table.increments('id').primary();
