@@ -17,7 +17,7 @@ const getExpenses = async function (req, res) {
       return res.status(500).json({ message: 'trip id is undefined' });
 
     // extract the expenses associated with the trip id from the database
-    const data = await knex('expenses').select('*').where({ trip_id: tripID });
+    const data = await knex('expenses').select('*').where({ trip_id: tripid });
 
     // if there are no expenses return status code 204 No Content
     if (!data.length) return res.status(204).json({ message: 'No Content' });
@@ -108,12 +108,14 @@ const updateExpense = async function (req, res) {
 // Delete the expense from the DB for that trip
 const deleteExpense = async function (req, res) {
   try {
-    const { tripID, expenseID } = req.body;
+    // extract info from req.body and req.params
+    const { expenseid } = req.params;
+    const { userid, tripid } = req.body;
 
-    await knex('expenses')
-      .where({ id: expenseID })
-      .andWhere({ trip_id: tripID })
-      .del();
+    // delete the expense
+    const data = await knex('expenses')
+      .where({ id: expenseid, trip_id: tripid })
+      .del(['id']);
 
     res.status(200);
   } catch (error) {
@@ -124,13 +126,13 @@ const deleteExpense = async function (req, res) {
 
 const getAverageExpense = async function (req, res) {
   try {
-    const { tripID } = req.params;
-    if (tripID === undefined) {
+    const { tripid } = req.params;
+    if (tripid === undefined) {
       res.status(500).json({ message: 'trip id is undefined' });
       return;
     }
 
-    const data = await knex('expenses').select('*').where({ trip_id: tripID });
+    const data = await knex('expenses').select('*').where({ trip_id: tripid });
 
     //If the trip has expeneses in the DB, calculate the average
     //I dont know if this works yet, I need to check.
