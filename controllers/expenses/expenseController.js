@@ -41,24 +41,40 @@ const getExpenses = async function (req, res) {
 const createExpense = async function (req, res) {
   try {
     // extract required information from req.body
-    const { userid, tripid, itemName, username, money } = req.body;
+    const { userid, tripid, itemName, money } = req.body;
+    let { purchaserid } = req.body;
+
+    // if a purchaser has been specified, use that instead of userid
+    purchaserid = purchaserid ? purchaserid : userid;
 
     // confirm all required information is defined
-    if (!userid || !tripid || !itemName || !username || !money)
+    if (!purchaserid || !tripid || !itemName || !money)
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
 
     // insert the new expense object into expenses table
-    const data = await knex('expenses')
-      .returning(['id', 'item_name', 'username', 'money'])
-      .insert({
-        user_id: userid,
-        trip_id: tripid,
-        item_name: itemName,
-        username: username,
-        money: money,
-      });
+    let data;
+    await knex.transaction(async trx => {
+      const id = await knex('expenses')
+        .insert(
+          {
+            user_id: purchaserid,
+            trip_id: tripid,
+            item_name: itemName,
+            money: money,
+          },
+          'id'
+        )
+        .transacting(trx);
+
+      data = await knex
+        .select(['expenses.id', 'item_name', 'users.username', 'money'])
+        .from('expenses')
+        .join('users', 'user_id', 'users.id')
+        .where('expenses.id', id[0].id)
+        .transacting(trx);
+    });
 
     // confirm the new data has been saved in data
     if (!data.length)
@@ -67,6 +83,7 @@ const createExpense = async function (req, res) {
     // send the data
     return res.status(200).json(data);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
