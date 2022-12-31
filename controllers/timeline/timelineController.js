@@ -141,8 +141,8 @@ const deleteEvent = async function (req, res) {
     const data = await knex('trips_events').where('id', eventid).del(['id']);
 
     // confirm the new data has been saved in data
-    if (!data.length)
-      return res.status(500).json({ message: 'Internal Server Error' });
+    if (!data.length) return res.sendStatus(404);
+
     console.log(`event id: ${data[0].id} deleted`);
 
     // send the data
