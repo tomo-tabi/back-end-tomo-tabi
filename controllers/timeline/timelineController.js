@@ -19,14 +19,6 @@ const getEvents = async function (req, res) {
         .status(500)
         .json({ message: 'required variable is undefined' });
 
-    // confirm user is connected to trip TODO: make this middleware?
-    const authorized = await knex
-      .select(null)
-      .from('users_trips')
-      .where({ user_id: userid, trip_id: tripid });
-
-    if (!authorized.length) return res.sendStatus(403);
-
     // extract data from db
     const data = await knex
       .select('*')
@@ -104,14 +96,6 @@ const updateEvent = async function (req, res) {
         .status(500)
         .json({ message: 'required variable is undefined' });
 
-    // confirm user is connected to trip TODO: make this middleware?
-    const authorized = await knex
-      .select(null)
-      .from('users_trips')
-      .where({ user_id: userid, trip_id: tripid });
-
-    if (!authorized.length) return res.sendStatus(403);
-
     // update the event row
     const data = await knex('trips_events')
       .returning(['id', 'event_name', 'event_date'])
@@ -152,14 +136,6 @@ const deleteEvent = async function (req, res) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
-
-    // confirm user is connected to trip TODO: make this middleware?
-    const authorized = await knex
-      .select(null)
-      .from('users_trips')
-      .where({ user_id: userid, trip_id: tripid });
-
-    if (!authorized.length) return res.sendStatus(403);
 
     // delete the event
     const data = await knex('trips_events').where('id', eventid).del(['id']);

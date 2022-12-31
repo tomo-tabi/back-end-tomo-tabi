@@ -11,6 +11,7 @@ const getExpenses = async function (req, res) {
   try {
     // extract the trip id from req.params
     const { tripid } = req.params;
+    const { userid } = req.body;
 
     // confirm the trip id is defined
     if (!tripid)
@@ -53,9 +54,8 @@ const createExpense = async function (req, res) {
         .status(500)
         .json({ message: 'required variable is undefined' });
 
-    // insert the new expense object into expenses table
-    let data;
-    await knex.transaction(async trx => {
+    const data = await knex.transaction(async trx => {
+      // insert the new expense object into expenses table
       const id = await knex('expenses')
         .insert(
           {
@@ -68,12 +68,15 @@ const createExpense = async function (req, res) {
         )
         .transacting(trx);
 
-      data = await knex
+      // extract new data from users - expenses join table
+      const joinData = await knex
         .select(['expenses.id', 'item_name', 'users.username', 'money'])
         .from('expenses')
         .join('users', 'user_id', 'users.id')
         .where('expenses.id', id[0].id)
         .transacting(trx);
+
+      return joinData;
     });
 
     // confirm the new data has been saved in data
