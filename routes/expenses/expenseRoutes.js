@@ -9,7 +9,7 @@ router.use(authenticateToken);
 
 router.get('/:tripid', userToTrip, expenseCtrl.getExpenses);
 router.post('/create', userToTrip, expenseCtrl.createExpense);
-router.put('/update', expenseCtrl.updateExpense);
+router.put('/update/:expenseid', expenseCtrl.updateExpense);
 router.delete('/delete/:expenseid', expenseCtrl.deleteExpense);
 router.get('/:tripid/average', userToTrip, expenseCtrl.getAverageExpense);
 

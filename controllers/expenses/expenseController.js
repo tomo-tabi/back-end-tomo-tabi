@@ -101,17 +101,43 @@ const createExpense = async function (req, res) {
 const updateExpense = async function (req, res) {
   try {
     // extract all required information from req.body
-    const { expenseid, itemName, username, money } = req.body;
+    const { expenseid } = req.params;
+    const { itemName, money } = req.body;
+    let { purchaserid } = req.body;
 
-    // update the expense using the expense id
-    const data = await knex('expenses')
-      .where({ id: expenseid })
-      .update({
-        item_name: itemName,
-        username: username,
-        money: money,
-      })
-      .returning('*');
+    // if a purchaser has been specified, use that instead of userid
+    purchaserid = purchaserid ? purchaserid : userid;
+
+    // confirm all required information is defined
+    if (!purchaserid || !itemName || !money || !expenseid)
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
+
+    const data = await knex.transaction(async trx => {
+      // update expense using expenseid
+      const id = await knex('expenses')
+        .where('id', expenseid)
+        .update(
+          {
+            item_name: itemName,
+            user_id: purchaserid,
+            money: money,
+          },
+          ['id']
+        )
+        .transacting(trx);
+
+      // extract new data from users - expenses join table
+      const joinData = await knex
+        .select(['expenses.id', 'item_name', 'users.username', 'money'])
+        .from('expenses')
+        .join('users', 'user_id', 'users.id')
+        .where('expenses.id', id[0].id)
+        .transacting(trx);
+
+      return joinData;
+    });
 
     // confirm data has been saved in data
     if (!data.length)
