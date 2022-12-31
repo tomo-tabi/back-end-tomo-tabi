@@ -150,22 +150,34 @@ const updateExpense = async function (req, res) {
   }
 };
 
-// Delete the expense from the DB for that trip
+/**
+ * Respond to a DELETE request to API_URL/expense/delete/:expenseid with status code 200
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http status code
+ */
+
 const deleteExpense = async function (req, res) {
   try {
     // extract info from req.body and req.params
     const { expenseid } = req.params;
-    const { userid, tripid } = req.body;
+    const { tripid } = req.body;
+
+    // confirm all required information is defined
+    if (!expenseid) return res.sendStatus(500);
 
     // delete the expense
     const data = await knex('expenses')
       .where({ id: expenseid, trip_id: tripid })
       .del(['id']);
 
-    res.status(200);
+    // ensure data has a deleted item id
+    if (!data.length) return res.sendStatus(404);
+
+    return res.sendStatus(200);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.sendStatus(500);
   }
 };
 

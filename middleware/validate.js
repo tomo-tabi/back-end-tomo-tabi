@@ -60,7 +60,6 @@ const userToTrip = async function (req, res, next) {
     // if no connection response with status code 403
     if (!exists.length) return res.sendStatus(403);
 
-    console.log('connected');
     // all is well
     next();
   } catch (e) {
