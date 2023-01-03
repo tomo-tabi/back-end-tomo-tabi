@@ -37,3 +37,9 @@ if userid is needed for a path it should be stored in the fetch request's header
 - [x] DELETE - API_URL/timeline/delete/:eventid
 
 ## /expense
+
+- [x] GET - API_URL/expense/:tripid
+- [x] POST - API_URL/expense/create
+- [x] PUT - API_URL/expense/update/:expenseid
+- [x] DELETE - API_URL/expense/delete/:expenseid
+- [x] GET - API_URL/expense/average/:tripid
