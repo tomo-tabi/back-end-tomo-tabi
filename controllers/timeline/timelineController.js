@@ -23,7 +23,8 @@ const getEvents = async function (req, res) {
     const data = await knex
       .select('*')
       .from('trips_events')
-      .where('trip_id', tripid);
+      .where('trip_id', tripid)
+      .orderBy("event_date", "asc");
 
     // confirm data exists
     if (!data.length) return res.sendStatus(500);

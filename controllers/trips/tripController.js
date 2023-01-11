@@ -22,7 +22,9 @@ const getTrips = async function (req, res) {
       .select('trips.id', 'start_date', 'end_date', 'name')
       .from('trips')
       .join('users_trips', 'trips.id', 'users_trips.trip_id')
-      .where('users_trips.user_id', userid);
+      .where('users_trips.user_id', userid)
+      .orderBy("event_date", "asc");
+
 
     // if there is no data send 204
     if (!data.length) return res.status(204).json({ message: 'no data' });
