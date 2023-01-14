@@ -1,11 +1,12 @@
 const knex = require('../../db/knex');
 const [ACCEPTED, REJECTED, PENDING] = ['accepted', 'rejected', 'pending'];
+const { getIdFromEmail } = require('../../utils/getID');
 
 /**
- * Respond to a GET request to API_URL/invite/ with an array of expense objects
+ * Respond to a GET request to API_URL/invite/
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
- * @returns {Response} returns an http response containing an array of expense objects
+ * @returns {Response} returns an array of invite objects where status is pending
  */
 
 const getInvites = async function (req, res) {
@@ -33,59 +34,40 @@ const getInvites = async function (req, res) {
 };
 
 /**
- * Respond to a POST request to API_URL/expense/create with all information regarding
+ * Respond to a POST request to API_URL/invite/create with all information regarding
  * the new expense.
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
- * @returns {Response} returns an http response containing the new expense object
+ * @returns {Response} returns an http response containing the new invite
  */
 
 const createInvite = async function (req, res) {
   try {
     // extract required information from req.body
-    const { userid, tripid, itemName, money } = req.body;
-    let { purchaserid } = req.body;
+    const { userid, tripid, email } = req.body;
 
-    // if a purchaser has been specified, use that instead of userid
-    purchaserid = purchaserid ? purchaserid : userid;
+    const receiverid = getIdFromEmail(email);
 
     // confirm all required information is defined
-    if (!purchaserid || !tripid || !itemName || !money)
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (!userid || !receiverid)
+      return res.status(500).json('required variable is undefined');
 
-    const data = await knex.transaction(async trx => {
-      // insert the new expense object into expenses table
-      const id = await knex('expenses')
-        .insert(
-          {
-            user_id: purchaserid,
-            trip_id: tripid,
-            item_name: itemName,
-            money: money,
-          },
-          'id'
-        )
-        .transacting(trx);
-
-      // extract new data from users - expenses join table
-      const joinData = await knex
-        .select(['expenses.id', 'item_name', 'users.username', 'money'])
-        .from('expenses')
-        .join('users', 'user_id', 'users.id')
-        .where('expenses.id', id[0].id)
-        .transacting(trx);
-
-      return joinData;
-    });
+    const data = await knex('invites').insert(
+      {
+        sender_id: userid,
+        receiver_id: receiverid,
+        trip_id: tripid,
+        status: PENDING,
+      },
+      'id'
+    );
 
     // confirm the new data has been saved in data
     if (!data.length)
       return res.status(500).json({ message: 'Internal Server Error' });
 
-    // send the data
-    return res.status(200).json(data);
+    // send status code 'CREATED'
+    return res.status(201);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal Server Error' });
@@ -93,59 +75,64 @@ const createInvite = async function (req, res) {
 };
 
 /**
- * Respond to a PUT request to API_URL/expense/update with all information regarding
- * the updated expense after updated said expense.
+ * Respond to a PUT request to API_URL/invite/accept/:inviteid
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
  * @returns {Response} returns an http response containing the updated expense object
  */
 
-const updateInvite = async function (req, res) {
+const acceptInvite = async function (req, res) {
   try {
     // extract all required information from req.body
-    const { expenseid } = req.params;
-    const { itemName, money } = req.body;
-    let { purchaserid } = req.body;
-
-    // if a purchaser has been specified, use that instead of userid
-    purchaserid = purchaserid ? purchaserid : userid;
+    const { inviteid } = req.params;
+    const { userid } = req.body;
 
     // confirm all required information is defined
-    if (!purchaserid || !itemName || !money || !expenseid)
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (!inviteid || !userid)
+      return res.status(500).json('required variable is undefined');
 
-    const data = await knex.transaction(async trx => {
-      // update expense using expenseid
-      const id = await knex('expenses')
-        .where('id', expenseid)
-        .update(
-          {
-            item_name: itemName,
-            user_id: purchaserid,
-            money: money,
-          },
-          ['id']
-        )
+    await knex.transaction(async trx => {
+      // update invite to accepted using inviteid
+      const tripid = await knex('invites')
+        .where('id', inviteid)
+        .update({ status: ACCEPTED }, ['trip_id'])
         .transacting(trx);
 
-      // extract new data from users - expenses join table
-      const joinData = await knex
-        .select(['expenses.id', 'item_name', 'users.username', 'money'])
-        .from('expenses')
-        .join('users', 'user_id', 'users.id')
-        .where('expenses.id', id[0].id)
+      // update users_trips
+      await knex('users_trips')
+        .insert({ user_id: userid, trip_id: tripid })
         .transacting(trx);
-
-      return joinData;
     });
 
-    // confirm data has been saved in data
-    if (!data.length)
-      return res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(200).json('invite accepted');
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
 
-    return res.status(200).json(data);
+/**
+ * Respond to a PUT request to API_URL/invite/reject/:tripid
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an http response containing the updated expense object
+ */
+
+const rejectInvite = async function (req, res) {
+  try {
+    // extract all required information from req.body
+    const { inviteid } = req.params;
+    const { userid } = req.body;
+
+    // confirm all required information is defined
+    if (!inviteid || !userid)
+      return res.status(500).json('required variable is undefined');
+
+    await knex('invites')
+      .where('id', inviteid)
+      .update({ status: REJECTED }, ['trip_id']);
+
+    return res.status(200).json('invite rejected');
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Internal Server Error' });
@@ -162,16 +149,13 @@ const updateInvite = async function (req, res) {
 const deleteInvite = async function (req, res) {
   try {
     // extract info from req.body and req.params
-    const { expenseid } = req.params;
-    const { tripid } = req.body;
+    const { inviteid } = req.params;
 
     // confirm all required information is defined
-    if (!expenseid) return res.sendStatus(500);
+    if (!inviteid) return res.sendStatus(500);
 
     // delete the expense
-    const data = await knex('expenses')
-      .where({ id: expenseid, trip_id: tripid })
-      .del(['id']);
+    const data = await knex('invites').where({ id: inviteid }).del(['id']);
 
     // ensure data has a deleted item id
     if (!data.length) return res.sendStatus(404);
@@ -186,6 +170,7 @@ const deleteInvite = async function (req, res) {
 module.exports = {
   getInvites,
   createInvite,
-  updateInvite,
+  acceptInvite,
+  rejectInvite,
   deleteInvite,
 };
