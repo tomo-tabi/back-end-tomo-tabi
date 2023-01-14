@@ -1,4 +1,5 @@
 const knex = require('../../db/knex');
+const [ACCEPTED, REJECTED, PENDING] = ['accepted', 'rejected', 'pending'];
 
 /**
  * Respond to a GET request to API_URL/invite/ with an array of expense objects
@@ -18,7 +19,7 @@ const getInvites = async function (req, res) {
     // extract the expenses associated with the trip id from the database
     const data = await knex('invites')
       .select('*')
-      .where({ invitee_id: userid });
+      .where({ receiver_id: userid, status: PENDING });
 
     // if there are no expenses return status code 204 No Content
     if (!data.length) return res.status(204).json('No content');
