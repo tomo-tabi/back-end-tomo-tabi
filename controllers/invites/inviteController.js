@@ -34,11 +34,10 @@ const getInvites = async function (req, res) {
 };
 
 /**
- * Respond to a POST request to API_URL/invite/create with all information regarding
- * the new expense.
+ * Respond to a POST request to API_URL/invite/create
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
- * @returns {Response} returns an http response containing the new invite
+ * @returns {Response} returns a CREATED status
  */
 
 const createInvite = async function (req, res) {
@@ -78,7 +77,7 @@ const createInvite = async function (req, res) {
  * Respond to a PUT request to API_URL/invite/accept/:inviteid
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
- * @returns {Response} returns an http response containing the updated expense object
+ * @returns {Response} returns an http response 200
  */
 
 const acceptInvite = async function (req, res) {
@@ -115,7 +114,7 @@ const acceptInvite = async function (req, res) {
  * Respond to a PUT request to API_URL/invite/reject/:tripid
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
- * @returns {Response} returns an http response containing the updated expense object
+ * @returns {Response} returns an http response 200
  */
 
 const rejectInvite = async function (req, res) {
@@ -140,10 +139,10 @@ const rejectInvite = async function (req, res) {
 };
 
 /**
- * Respond to a DELETE request to API_URL/expense/delete/:expenseid with status code 200
+ * Respond to a DELETE request to API_URL/invite/delete/:inviteid with status code 200
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
- * @returns {Response} returns an http status code
+ * @returns {Response} returns an http status code 200
  */
 
 const deleteInvite = async function (req, res) {
