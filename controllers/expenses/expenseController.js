@@ -19,8 +19,8 @@ const getExpenses = async function (req, res) {
     // extract the expenses associated with the trip id from the database
     const data = await knex('expenses').select('*').where({ trip_id: tripid });
 
-    // if there are no expenses return status code 204 No Content
-    if (!data.length) return res.status(204).json({ message: 'No Content' });
+    // if there are no expenses return status code 404
+    if (!data.length) return res.status(404).json({ message: 'Not found' });
 
     // send the data
     return res.status(200).json(data);
@@ -164,7 +164,8 @@ const deleteExpense = async function (req, res) {
     const { tripid } = req.body;
 
     // confirm all required information is defined
-    if (!expenseid) return res.sendStatus(500);
+    if (!expenseid)
+      return res.status(500).json({ message: 'undefined variable' });
 
     // delete the expense
     const data = await knex('expenses')
@@ -172,12 +173,13 @@ const deleteExpense = async function (req, res) {
       .del(['id']);
 
     // ensure data has a deleted item id
-    if (!data.length) return res.sendStatus(404);
+    if (!data.length)
+      return res.status(404).json({ message: 'item not found' });
 
-    return res.sendStatus(200);
+    return res.status(200).json({ message: 'item deleted' });
   } catch (error) {
     console.log(error);
-    return res.sendStatus(500);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -201,7 +203,8 @@ const getAverageExpense = async function (req, res) {
     const data = await knex('expenses').select('*').where({ trip_id: tripid });
 
     // confirm data exists
-    if (!data.length) return res.sendStatus(404);
+    if (!data.length)
+      return res.status(404).json({ message: 'item not found' });
 
     // initialize helper object
     const helperObject = { totalMoney: 0, numUsers: 0 };
@@ -226,7 +229,7 @@ const getAverageExpense = async function (req, res) {
     return res.status(200).json(averageMoney);
   } catch (error) {
     console.log(error);
-    res.sendStatus(500);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 

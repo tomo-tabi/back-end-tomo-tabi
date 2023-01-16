@@ -19,7 +19,7 @@ const authenticateToken = (req, res, next) => {
   const token = req.headers.authorization.split(' ')[1];
   // if token is not present user is not authorized
   if (!token) {
-    return res.status(401).send('token not found');
+    return res.status(401).json({ message: 'token not found' });
   }
 
   try {
@@ -28,7 +28,7 @@ const authenticateToken = (req, res, next) => {
     next();
   } catch (e) {
     console.log(e);
-    return res.status(401).send('invalid or expired token');
+    return res.status(401).json({ message: 'invalid or expired token' });
   }
 };
 
