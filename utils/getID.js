@@ -1,7 +1,7 @@
 const knex = require('../db/knex');
 
 async function getIdFromEmail(email) {
-  const data = knex('users').select('id').where('email', email);
+  const data = await knex('users').select('id').where('email', email);
 
   if (!data.length) return;
 

@@ -45,7 +45,7 @@ const createInvite = async function (req, res) {
     // extract required information from req.body
     const { userid, tripid, email } = req.body;
 
-    const receiverid = getIdFromEmail(email);
+    const receiverid = await getIdFromEmail(email);
 
     // confirm all required information is defined
     if (!userid || !receiverid || !tripid)
@@ -99,7 +99,7 @@ const acceptInvite = async function (req, res) {
 
       // update users_trips
       await knex('users_trips')
-        .insert({ user_id: userid, trip_id: tripid })
+        .insert({ user_id: userid, trip_id: tripid[0].trip_id })
         .transacting(trx);
     });
 
@@ -141,7 +141,7 @@ const rejectInvite = async function (req, res) {
 };
 
 /**
- * Respond to a DELETE request to API_URL/invite/delete/:inviteid with status code 200
+ * Respond to a DELETE request to API_URL/invite/:inviteid with status code 200
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
  * @returns {Response} returns an http status code 200
@@ -159,11 +159,12 @@ const deleteInvite = async function (req, res) {
         .json({ message: 'required variable is undefined' });
 
     // delete the expense
-    const data = await knex('invites').where({ id: inviteid }).del(['id']);
+    const data = await knex('invites').where({ id: inviteid }).del();
+
+    console.log(data);
 
     // ensure data has a deleted item id
-    if (!data.length)
-      return res.status(404).json({ message: 'item not found' });
+    if (!data) return res.status(404).json({ message: 'item not found' });
 
     return res.status(200).json({ message: 'item deleted' });
   } catch (error) {

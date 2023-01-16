@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const inviteCtrl = require('../../controllers/invites/inviteController');
 const { authenticateToken } = require('../../middleware/auth');
-const { emailFormat, emailNotExists } = require('../../middleware/validate');
+const { emailFormat, emailExists } = require('../../middleware/validate');
 const { userToTrip } = require('../../middleware/validate');
 
 // require jwt authentification for all subsequent requests
@@ -12,7 +12,7 @@ router.get('/', inviteCtrl.getInvites);
 router.post(
   '/create',
   emailFormat,
-  emailNotExists,
+  emailExists,
   userToTrip,
   inviteCtrl.createInvite
 );
