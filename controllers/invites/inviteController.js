@@ -161,8 +161,6 @@ const deleteInvite = async function (req, res) {
     // delete the expense
     const data = await knex('invites').where({ id: inviteid }).del();
 
-    console.log(data);
-
     // ensure data has a deleted item id
     if (!data) return res.status(404).json({ message: 'item not found' });
 
