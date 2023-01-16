@@ -29,10 +29,10 @@ const getTrips = async function (req, res) {
     if (!data.length) return res.status(204).json({ message: 'no data' });
 
     // send the data
-    res.status(200).json(data);
+    return res.status(200).json(data);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -62,7 +62,7 @@ const createTrip = async function (req, res) {
       .returning('*');
 
     // if trip insert fails, send status code 500 and exit function
-    if (!trip.length) return res.status(500);
+    if (!trip.length) return res.status(500).json({ message: 'Internal Server Error' });
 
     // link the user to the trip on the users_trips join table
     const join = await knex('users_trips')
@@ -70,12 +70,12 @@ const createTrip = async function (req, res) {
       .insert({ user_id: userid, trip_id: trip[0].id });
 
     // if join insert fails send status code 500
-    if (!join.length) return res.status(500);
+    if (!join.length) return res.status(500).json({ message: 'Internal Server Error' });
 
     // send the trip info to the front end
     return res.status(200).json(trip[0]);
   } catch (error) {
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -107,13 +107,13 @@ const updateTrip = async function (req, res) {
       .returning('*');
 
     // if trips insert fails, send status code 404
-    if (!data.length) return res.status(404);
+    if (!data.length) return res.status(404).json({ message: 'item not found' });
 
     // send the new data back
-    return res.status(200).send(data[0]);
+    return res.status(200).json(data[0]);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -139,15 +139,15 @@ const deleteTrip = async function (req, res) {
       .del(['id']);
 
     // confirm an item has been deleted
-    if (!data.length) return res.sendStatus(404);
+    if (!data.length) return res.status(404).json({ message: 'item not found' });
 
     console.log(`users_trips id: ${data[0].id} deleted`);
 
     // send status 200
-    res.sendStatus(200);
+    return res.status(200).json({ message: 'item deleted' });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
