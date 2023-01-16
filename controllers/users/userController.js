@@ -69,7 +69,7 @@ const login = async function (req, res) {
     const valid = await bcrypt.compare(password, data[0].password);
 
     // if the password is incorrect exit the function
-    if (!valid) return res.status(401).send('incorrect password');
+    if (!valid) return res.status(401).json({ message: 'incorrect password' });
 
     // create a jwt token containing the user's id
     const token = auth.createToken(data[0].id);
@@ -81,7 +81,7 @@ const login = async function (req, res) {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -131,7 +131,7 @@ const signup = async function (req, res) {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -168,10 +168,10 @@ const putUser = async function (req, res) {
     }
 
     // send the data
-    res.status(200).json(data[0]);
+    return res.status(200).json(data[0]);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
