@@ -27,7 +27,7 @@ const getEvents = async function (req, res) {
       .orderBy("event_date", "asc");
 
     // confirm data exists
-    if (!data.length) return res.sendStatus(500);
+    if (!data.length) return res.sendStatus(204);
 
     // send the data
     res.status(200).json(data);
