@@ -14,22 +14,22 @@ const getInvites = async function (req, res) {
     // extract the userid from req.body
     const { userid } = req.body;
 
-    // confirm the trip id is defined
+    // confirm the userid is defined
     if (!userid) return res.status(500).json('user id is undefined');
 
-    // extract the expenses associated with the trip id from the database
+    // extract the invites associated with the user
     const data = await knex('invites')
       .select('*')
       .where({ receiver_id: userid, status: PENDING });
 
-    // if there are no expenses return status code 204 No Content
-    if (!data.length) return res.status(204).json('No content');
+    // check that info exists
+    if (!data.length) return res.status(404).json('no invites found');
 
     // send the data
     return res.status(200).json(data);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -48,7 +48,7 @@ const createInvite = async function (req, res) {
     const receiverid = getIdFromEmail(email);
 
     // confirm all required information is defined
-    if (!userid || !receiverid)
+    if (!userid || !receiverid || !tripid)
       return res.status(500).json('required variable is undefined');
 
     const data = await knex('invites').insert(
@@ -66,10 +66,10 @@ const createInvite = async function (req, res) {
       return res.status(500).json({ message: 'Internal Server Error' });
 
     // send status code 'CREATED'
-    return res.status(201);
+    return res.status(201).json({ message: 'invite created' });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -103,10 +103,10 @@ const acceptInvite = async function (req, res) {
         .transacting(trx);
     });
 
-    return res.status(200).json('invite accepted');
+    return res.status(200).json({ message: 'invite accepted' });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -125,16 +125,18 @@ const rejectInvite = async function (req, res) {
 
     // confirm all required information is defined
     if (!inviteid || !userid)
-      return res.status(500).json('required variable is undefined');
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
 
     await knex('invites')
       .where('id', inviteid)
       .update({ status: REJECTED }, ['trip_id']);
 
-    return res.status(200).json('invite rejected');
+    return res.status(200).json({ message: 'invite rejected' });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -151,18 +153,22 @@ const deleteInvite = async function (req, res) {
     const { inviteid } = req.params;
 
     // confirm all required information is defined
-    if (!inviteid) return res.sendStatus(500);
+    if (!inviteid)
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
 
     // delete the expense
     const data = await knex('invites').where({ id: inviteid }).del(['id']);
 
     // ensure data has a deleted item id
-    if (!data.length) return res.sendStatus(404);
+    if (!data.length)
+      return res.status(404).json({ message: 'item not found' });
 
-    return res.sendStatus(200);
+    return res.status(200).json({ message: 'item deleted' });
   } catch (error) {
     console.log(error);
-    return res.sendStatus(500);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
