@@ -24,10 +24,11 @@ const getEvents = async function (req, res) {
       .select('*')
       .from('trips_events')
       .where('trip_id', tripid)
-      .orderBy("event_date", "asc");
+      .orderBy('event_date', 'asc');
 
     // confirm data exists
-    if (!data.length) return res.status(204).json({ message: 'item not found' });
+    if (!data.length)
+      return res.status(404).json({ message: 'item not found' });
 
     // send the data
     return res.status(200).json(data);
@@ -142,7 +143,8 @@ const deleteEvent = async function (req, res) {
     const data = await knex('trips_events').where('id', eventid).del(['id']);
 
     // confirm the new data has been saved in data
-    if (!data.length) return res.status(404).json({ message: 'item not found' });
+    if (!data.length)
+      return res.status(404).json({ message: 'item not found' });
 
     console.log(`event id: ${data[0].id} deleted`);
 
