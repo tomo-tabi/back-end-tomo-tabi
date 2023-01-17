@@ -1,6 +1,7 @@
 const knex = require('../../db/knex');
 const [ACCEPTED, REJECTED, PENDING] = ['accepted', 'rejected', 'pending'];
 const { getIdFromEmail } = require('../../utils/getID');
+const { inviteExists } = require('../../utils/exists');
 
 /**
  * Respond to a GET request to API_URL/invite/
@@ -52,6 +53,9 @@ const createInvite = async function (req, res) {
     // confirm all required information is defined
     if (!userid || !receiverid || !tripid)
       return res.status(500).json('required variable is undefined');
+
+    if (inviteExists(userid, receiverid))
+      return res.status(400).json({ message: 'invite exists' });
 
     const data = await knex('invites').insert(
       {
