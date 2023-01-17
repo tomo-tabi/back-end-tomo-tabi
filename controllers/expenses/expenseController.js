@@ -17,7 +17,17 @@ const getExpenses = async function (req, res) {
       return res.status(500).json({ message: 'trip id is undefined' });
 
     // extract the expenses associated with the trip id from the database
-    const data = await knex('expenses').select('*').where({ trip_id: tripid });
+    const data = await knex('expenses')
+      .join('users', 'users.id', 'user_id')
+      .select([
+        'expenses.id',
+        'item_name',
+        'money',
+        'trip_id',
+        'email',
+        'username',
+      ])
+      .where({ trip_id: tripid });
 
     // if there are no expenses return status code 404
     if (!data.length) return res.status(404).json({ message: 'Not found' });
