@@ -36,6 +36,35 @@ const getTrips = async function (req, res) {
   }
 };
 
+const getTripUsers = async function (req, res) {
+  //using a table join, extract and send back username
+  //and email of all users tied to the requested trip in users_trips table
+  try {
+    // extract userid from req.body
+    const { tripid } = req.params;
+    const { userid } = req.body;
+
+    // confirm userid is not undefined
+    if (!tripid || !userid)
+      return res.status(500).json({ message: 'user id is not defined' });
+
+    // retrieve user email and name using users and users_trips join table
+    const data = await knex('users_trips')
+      .join('users', 'users.id', 'user_id')
+      .select('users.email', 'users.username')
+      .where({ trip_id: tripid });
+
+    // if there is no data send 404
+    if (!data.length) return res.status(404).json({ message: 'not found' });
+
+    // send data
+    return res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 /**
  * Respond to a POST request to API_URL/trip/
  * @param  {Request}  req Request object
@@ -160,4 +189,5 @@ module.exports = {
   createTrip,
   updateTrip,
   deleteTrip,
+  getTripUsers,
 };
