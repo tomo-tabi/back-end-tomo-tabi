@@ -25,7 +25,8 @@ const getInvites = async function (req, res) {
       .where({ receiver_id: userid, status: PENDING });
 
     // check that info exists
-    if (!data.length) return res.status(404).json('no invites found');
+    if (!data.length)
+      return res.status(404).json({ message: 'no invites found' });
 
     // send the data
     return res.status(200).json(data);
