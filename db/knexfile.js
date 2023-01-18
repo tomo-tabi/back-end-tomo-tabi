@@ -1,5 +1,4 @@
 require('dotenv').config({ path: '../.env' });
-
 module.exports = {
   client: 'postgresql',
   connection: process.env.DB_URL || {
@@ -16,3 +15,4 @@ module.exports = {
     directory: './data/seeds',
   },
 };
+

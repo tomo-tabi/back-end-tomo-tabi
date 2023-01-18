@@ -172,6 +172,7 @@ const deleteInvite = async function (req, res) {
   }
 };
 
+
 module.exports = {
   getInvites,
   createInvite,
