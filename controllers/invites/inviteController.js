@@ -20,7 +20,8 @@ const getInvites = async function (req, res) {
     // extract the invites associated with the user
     const data = await knex('invites')
       .join('users', 'sender_id', 'users.id')
-      .select(['invites.id', 'status', 'trip_id', 'email', 'username'])
+      .join('trips', 'trip_id', 'trips.id')
+      .select(['invites.id', 'status', 'trips.name', 'email', 'username'])
       .where({ receiver_id: userid, status: PENDING });
 
     // check that info exists
