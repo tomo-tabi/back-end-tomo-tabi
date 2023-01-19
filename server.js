@@ -1,8 +1,10 @@
 require('dotenv').config();
 const express = require('express');
+
 const app = express();
 const cors = require('cors');
 const timeout = require('connect-timeout');
+
 const port = process.env.PORT || 8080;
 
 // Import route files
@@ -24,11 +26,7 @@ app.use('/timeline', timelineRoutes);
 app.use('/expense', expenseRoutes);
 app.use('/invite', inviteRoutes);
 
-// function to check if the request has timed out
-// function haltOnTimedout(req, res, next) {
-//   if (!req.timedout) next();
-// }
-
+// Initialize listening
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
