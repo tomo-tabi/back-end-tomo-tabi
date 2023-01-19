@@ -8,7 +8,7 @@ const knex = require('../../db/knex');
  * @returns {Response} response Object containing an array of trips associated with the userid
  */
 
-const getTrips = async function (req, res) {
+async function getTrips(req, res) {
   try {
     // extract userid from req.body
     const { userid } = req.body;
@@ -32,12 +32,13 @@ const getTrips = async function (req, res) {
     // send the data
     return res.status(200).json(data);
   } catch (error) {
-    console.log(error);
+    // eslint-disable-next-line no-console
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
-};
+}
 
-const getTripUsers = async function (req, res) {
+async function getTripUsers(req, res) {
   // using a table join, extract and send back username
   // and email of all users tied to the requested trip in users_trips table
   try {
@@ -62,10 +63,11 @@ const getTripUsers = async function (req, res) {
     // send data
     return res.status(200).json(data);
   } catch (error) {
-    console.log(error);
+    // eslint-disable-next-line no-console
+    console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
-};
+}
 
 /**
  * Respond to a POST request to API_URL/trip/
@@ -74,7 +76,7 @@ const getTripUsers = async function (req, res) {
  * @returns {Response} response Object containing the posted trip
  */
 
-const createTrip = async function (req, res) {
+async function createTrip(req, res) {
   try {
     // extract required information from req.body
     const { startDate, endDate, userid, name } = req.body;
@@ -111,9 +113,11 @@ const createTrip = async function (req, res) {
     // send the trip info to the front end
     return res.status(200).json(trip[0]);
   } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
-};
+}
 
 /**
  * Respond to a PUT request to API_URL/trip/:tripID
@@ -122,7 +126,7 @@ const createTrip = async function (req, res) {
  * @returns {Response} response Object containing the updated trip
  */
 
-const updateTrip = async function (req, res) {
+async function updateTrip(req, res) {
   try {
     // extract information from req.params and req.body
     const { tripid } = req.params;
@@ -151,10 +155,11 @@ const updateTrip = async function (req, res) {
     // send the new data back
     return res.status(200).json(data[0]);
   } catch (error) {
-    console.log(error);
+    // eslint-disable-next-line no-console
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
-};
+}
 
 /**
  * Respond to a DELETE request to API_URL/trip/tripID by removing
@@ -163,7 +168,7 @@ const updateTrip = async function (req, res) {
  * @param  {Response} res Response object
  * @returns {Response} response status 200
  */
-const deleteTrip = async function (req, res) {
+async function deleteTrip(req, res) {
   try {
     // extract data from req.params and req.body
     const { tripid } = req.params;
@@ -183,15 +188,17 @@ const deleteTrip = async function (req, res) {
       return res.status(404).json({ message: 'item not found' });
     }
 
+    // eslint-disable-next-line no-console
     console.log(`users_trips id: ${data[0].id} deleted`);
 
     // send status 200
     return res.status(200).json({ message: 'item deleted' });
   } catch (error) {
-    console.log(error);
+    // eslint-disable-next-line no-console
+    console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
-};
+}
 
 module.exports = {
   getTrips,

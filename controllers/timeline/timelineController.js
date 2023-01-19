@@ -7,7 +7,7 @@ const knex = require('../../db/knex');
  * @returns {Response} returns an http response containing an array of events
  */
 
-const getEvents = async function (req, res) {
+async function getEvents(req, res) {
   try {
     // extract required info from req.body and req.params
     const { tripid } = req.params;
@@ -28,15 +28,18 @@ const getEvents = async function (req, res) {
       .orderBy('event_date', 'asc');
 
     // confirm data exists
-    if (!data.length) { return res.status(404).json({ message: 'item not found' }); }
+    if (!data.length) {
+      return res.status(404).json({ message: 'item not found' });
+    }
 
     // send the data
     return res.status(200).json(data);
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
-};
+}
 
 /**
  * Respond to a POST request to API_URL/timeline/create with all information regarding
@@ -46,12 +49,10 @@ const getEvents = async function (req, res) {
  * @returns {Response} returns an http response containing the new expense object
  */
 
-const createEvent = async function (req, res) {
+async function createEvent(req, res) {
   try {
     // extract required information from req.body
-    const {
-      userid, tripid, eventName, eventDate,
-    } = req.body;
+    const { userid, tripid, eventName, eventDate } = req.body;
 
     // confirm all required information is defined
     if (!userid || !tripid || !eventName || !eventDate) {
@@ -70,15 +71,18 @@ const createEvent = async function (req, res) {
       });
 
     // confirm the new data has been saved in data
-    if (!data.length) { return res.status(500).json({ message: 'Internal Server Error' }); }
+    if (!data.length) {
+      return res.status(500).json({ message: 'Internal Server Error' });
+    }
 
     // send the data
     return res.status(200).json(data);
   } catch (error) {
-    console.log(error);
+    // eslint-disable-next-line no-console
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
-};
+}
 
 /**
  * Respond to a PUT request to API_URL/timeline/update/eventid with info on how to
@@ -88,13 +92,11 @@ const createEvent = async function (req, res) {
  * @returns {Response} returns an http response containing the updated expense object
  */
 
-const updateEvent = async function (req, res) {
+async function updateEvent(req, res) {
   try {
     // extract required information from req.body
     const { eventid } = req.params;
-    const {
-      userid, tripid, eventName, eventDate,
-    } = req.body;
+    const { userid, tripid, eventName, eventDate } = req.body;
 
     // confirm all required information is defined
     if (!userid || !tripid || !eventid || !eventName || !eventDate) {
@@ -113,15 +115,18 @@ const updateEvent = async function (req, res) {
       });
 
     // confirm the new data has been saved in data
-    if (!data.length) { return res.status(500).json({ message: 'Internal Server Error' }); }
+    if (!data.length) {
+      return res.status(500).json({ message: 'Internal Server Error' });
+    }
 
     // send the data
     return res.status(200).json(data);
   } catch (error) {
-    console.log(error);
+    // eslint-disable-next-line no-console
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
-};
+}
 
 /**
  * Respond to a PUT request to API_URL/timeline/create with info on how to
@@ -131,7 +136,7 @@ const updateEvent = async function (req, res) {
  * @returns {Response} returns an http response containing the updated expense object
  */
 
-const deleteEvent = async function (req, res) {
+async function deleteEvent(req, res) {
   try {
     // extract required information from req.body
     const { eventid } = req.params;
@@ -148,17 +153,21 @@ const deleteEvent = async function (req, res) {
     const data = await knex('trips_events').where('id', eventid).del(['id']);
 
     // confirm the new data has been saved in data
-    if (!data.length) { return res.status(404).json({ message: 'item not found' }); }
+    if (!data.length) {
+      return res.status(404).json({ message: 'item not found' });
+    }
 
+    // eslint-disable-next-line no-console
     console.log(`event id: ${data[0].id} deleted`);
 
     // send 200
     return res.status(200).json({ message: 'item deleted' });
   } catch (error) {
-    console.log(error);
+    // eslint-disable-next-line no-console
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
-};
+}
 
 module.exports = {
   getEvents,
