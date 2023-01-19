@@ -21,8 +21,6 @@ const emailFormat = function (req, res, next) {
     // convert email to lowercase
     req.body.email = email.toLowerCase();
 
-    console.log(email);
-
     // else move on to next function
     next();
   } catch (e) {
