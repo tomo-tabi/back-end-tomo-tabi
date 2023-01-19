@@ -30,7 +30,7 @@ const emailFormat = function (req, res, next) {
 };
 
 /**
- * checks if req.body.email already exists in the database
+ * checks if email exists and exits the route if it does.
  * @param  {Request}  req
  * @param  {Response} res
  * @param {function} next
@@ -54,6 +54,14 @@ const emailNotExists = async function (req, res, next) {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+/**
+ * checks if email exists and exits the route if it does not.
+ * @param  {Request}  req
+ * @param  {Response} res
+ * @param {function} next
+ * @returns {undefined}
+ */
 
 const emailExists = async function (req, res, next) {
   // extract email to check from req.body
