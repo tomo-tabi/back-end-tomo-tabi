@@ -10,19 +10,27 @@ const { REGEX } = require('../utils/constants');
  */
 
 const emailFormat = function (req, res, next) {
-  // extract email to check from req.body
-  const { email } = req.body;
+  try {
+    // extract email to check from req.body
+    const { email } = req.body;
 
-  // Check for a valid email address
-  if (!email.match(REGEX.EMAIL))
-    return res.status(400).json({ message: 'Invalid email' });
+    // Check for a valid email address
+    if (!email.match(REGEX.EMAIL))
+      return res.status(400).json({ message: 'Invalid email' });
 
-  // else move on to next function
-  next();
+    // convert email to lowercase
+    req.body.email = email.toLowerCase();
+
+    // else move on to next function
+    next();
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
 
 /**
- * checks if req.body.email already exists in the database
+ * checks if email exists and exits the route if it does.
  * @param  {Request}  req
  * @param  {Response} res
  * @param {function} next
@@ -46,6 +54,14 @@ const emailNotExists = async function (req, res, next) {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+/**
+ * checks if email exists and exits the route if it does not.
+ * @param  {Request}  req
+ * @param  {Response} res
+ * @param {function} next
+ * @returns {undefined}
+ */
 
 const emailExists = async function (req, res, next) {
   // extract email to check from req.body
