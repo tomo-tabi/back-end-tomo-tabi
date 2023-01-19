@@ -14,10 +14,11 @@ const getEvents = async function (req, res) {
     const { userid } = req.body;
 
     // confirm all required info is defined
-    if (!userid || !tripid)
+    if (!userid || !tripid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
+    }
 
     // extract data from db
     const data = await knex
@@ -27,8 +28,7 @@ const getEvents = async function (req, res) {
       .orderBy('event_date', 'asc');
 
     // confirm data exists
-    if (!data.length)
-      return res.status(404).json({ message: 'item not found' });
+    if (!data.length) { return res.status(404).json({ message: 'item not found' }); }
 
     // send the data
     return res.status(200).json(data);
@@ -49,13 +49,16 @@ const getEvents = async function (req, res) {
 const createEvent = async function (req, res) {
   try {
     // extract required information from req.body
-    const { userid, tripid, eventName, eventDate } = req.body;
+    const {
+      userid, tripid, eventName, eventDate,
+    } = req.body;
 
     // confirm all required information is defined
-    if (!userid || !tripid || !eventName || !eventDate)
+    if (!userid || !tripid || !eventName || !eventDate) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
+    }
 
     // insert the new event object into trips_events table
     const data = await knex('trips_events')
@@ -67,8 +70,7 @@ const createEvent = async function (req, res) {
       });
 
     // confirm the new data has been saved in data
-    if (!data.length)
-      return res.status(500).json({ message: 'Internal Server Error' });
+    if (!data.length) { return res.status(500).json({ message: 'Internal Server Error' }); }
 
     // send the data
     return res.status(200).json(data);
@@ -90,13 +92,16 @@ const updateEvent = async function (req, res) {
   try {
     // extract required information from req.body
     const { eventid } = req.params;
-    const { userid, tripid, eventName, eventDate } = req.body;
+    const {
+      userid, tripid, eventName, eventDate,
+    } = req.body;
 
     // confirm all required information is defined
-    if (!userid || !tripid || !eventid || !eventName || !eventDate)
+    if (!userid || !tripid || !eventid || !eventName || !eventDate) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
+    }
 
     // update the event row
     const data = await knex('trips_events')
@@ -108,8 +113,7 @@ const updateEvent = async function (req, res) {
       });
 
     // confirm the new data has been saved in data
-    if (!data.length)
-      return res.status(500).json({ message: 'Internal Server Error' });
+    if (!data.length) { return res.status(500).json({ message: 'Internal Server Error' }); }
 
     // send the data
     return res.status(200).json(data);
@@ -134,17 +138,17 @@ const deleteEvent = async function (req, res) {
     const { userid, tripid } = req.body;
 
     // confirm all required information is defined
-    if (!userid || !tripid || !eventid)
+    if (!userid || !tripid || !eventid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
+    }
 
     // delete the event
     const data = await knex('trips_events').where('id', eventid).del(['id']);
 
     // confirm the new data has been saved in data
-    if (!data.length)
-      return res.status(404).json({ message: 'item not found' });
+    if (!data.length) { return res.status(404).json({ message: 'item not found' }); }
 
     console.log(`event id: ${data[0].id} deleted`);
 

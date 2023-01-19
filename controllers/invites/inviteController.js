@@ -1,4 +1,5 @@
 const knex = require('../../db/knex');
+
 const [ACCEPTED, REJECTED, PENDING] = ['accepted', 'rejected', 'pending'];
 const { getIdFromEmail } = require('../../utils/getID');
 
@@ -25,8 +26,7 @@ const getInvites = async function (req, res) {
       .where({ receiver_id: userid, status: PENDING });
 
     // check that info exists
-    if (!data.length)
-      return res.status(404).json({ message: 'no invites found' });
+    if (!data.length) { return res.status(404).json({ message: 'no invites found' }); }
 
     // send the data
     return res.status(200).json(data);
@@ -51,8 +51,7 @@ const createInvite = async function (req, res) {
     const receiverid = await getIdFromEmail(email);
 
     // confirm all required information is defined
-    if (!userid || !receiverid || !tripid)
-      return res.status(500).json('required variable is undefined');
+    if (!userid || !receiverid || !tripid) { return res.status(500).json('required variable is undefined'); }
 
     const data = await knex('invites').insert(
       {
@@ -61,12 +60,11 @@ const createInvite = async function (req, res) {
         trip_id: tripid,
         status: PENDING,
       },
-      'id'
+      'id',
     );
 
     // confirm the new data has been saved in data
-    if (!data.length)
-      return res.status(500).json({ message: 'Internal Server Error' });
+    if (!data.length) { return res.status(500).json({ message: 'Internal Server Error' }); }
 
     // send status code 'CREATED'
     return res.status(201).json({ message: 'invite created' });
@@ -90,10 +88,9 @@ const acceptInvite = async function (req, res) {
     const { userid } = req.body;
 
     // confirm all required information is defined
-    if (!inviteid || !userid)
-      return res.status(500).json('required variable is undefined');
+    if (!inviteid || !userid) { return res.status(500).json('required variable is undefined'); }
 
-    await knex.transaction(async trx => {
+    await knex.transaction(async (trx) => {
       // update invite to accepted using inviteid
       const tripid = await knex('invites')
         .where('id', inviteid)
@@ -127,10 +124,11 @@ const rejectInvite = async function (req, res) {
     const { userid } = req.body;
 
     // confirm all required information is defined
-    if (!inviteid || !userid)
+    if (!inviteid || !userid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
+    }
 
     await knex('invites')
       .where('id', inviteid)
@@ -156,10 +154,11 @@ const deleteInvite = async function (req, res) {
     const { inviteid } = req.params;
 
     // confirm all required information is defined
-    if (!inviteid)
+    if (!inviteid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
+    }
 
     // delete the expense
     const data = await knex('invites').where({ id: inviteid }).del();
@@ -173,7 +172,6 @@ const deleteInvite = async function (req, res) {
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
-
 
 module.exports = {
   getInvites,

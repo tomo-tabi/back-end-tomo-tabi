@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const tripCtrl = require('../../controllers/trips/tripController');
 const { authenticateToken } = require('../../middleware/auth');

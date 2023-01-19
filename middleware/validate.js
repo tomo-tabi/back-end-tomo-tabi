@@ -15,8 +15,7 @@ const emailFormat = function (req, res, next) {
     const { email } = req.body;
 
     // Check for a valid email address
-    if (!email.match(REGEX.EMAIL))
-      return res.status(400).json({ message: 'Invalid email' });
+    if (!email.match(REGEX.EMAIL)) { return res.status(400).json({ message: 'Invalid email' }); }
 
     // convert email to lowercase
     req.body.email = email.toLowerCase();
@@ -44,8 +43,7 @@ const emailNotExists = async function (req, res, next) {
   try {
     // Check if the email already exists in the database
     const data = await knex.select('email').from('users').where('email', email);
-    if (data.length)
-      return res.status(409).json({ message: 'email already exists' });
+    if (data.length) { return res.status(409).json({ message: 'email already exists' }); }
 
     // else move on to the next function
     next();
@@ -70,8 +68,7 @@ const emailExists = async function (req, res, next) {
   try {
     // Check if the email already exists in the database
     const data = await knex.select('email').from('users').where('email', email);
-    if (!data.length)
-      return res.status(404).json({ message: 'email not found' });
+    if (!data.length) { return res.status(404).json({ message: 'email not found' }); }
 
     // else move on to the next function
     next();
@@ -94,10 +91,11 @@ const userToTrip = async function (req, res, next) {
       .where({ user_id: userid, trip_id: tripid });
 
     // if no connection response with status code 403
-    if (!exists.length)
+    if (!exists.length) {
       return res
         .status(403)
         .json({ message: 'user not authorized for this trip' });
+    }
 
     // all is well
     next();

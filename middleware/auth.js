@@ -4,11 +4,11 @@ const jwt = require('jsonwebtoken');
 
 // CREATE TOKEN
 
-const createToken = userid => {
+const createToken = (userid) => {
   const token = jwt.sign(
     { userid },
     process.env.ACCESS_TOKEN_SECRET || 'my secret',
-    { expiresIn: '7d' }
+    { expiresIn: '7d' },
   );
   return token;
 };

@@ -1,6 +1,7 @@
+const bcrypt = require('bcrypt');
 const knex = require('../../db/knex');
 const auth = require('../../middleware/auth');
-const bcrypt = require('bcrypt');
+
 const saltRounds = 10;
 
 /**
@@ -17,10 +18,11 @@ const getUser = async function (req, res) {
     const { userid } = req.body;
 
     // if there is no userid present, return an error message
-    if (!userid)
+    if (!userid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
+    }
 
     // extract the user's email and username from the database
     const data = await knex('users')
@@ -28,8 +30,7 @@ const getUser = async function (req, res) {
       .where({ id: userid });
 
     // if there is no data, return an error message
-    if (!data.length)
-      return res.status(404).json({ message: 'user information not found' });
+    if (!data.length) { return res.status(404).json({ message: 'user information not found' }); }
 
     // send the user information
     return res.status(200).json(data[0]);
@@ -53,15 +54,13 @@ const login = async function (req, res) {
     const { email, password } = req.body;
 
     // confirm that the password is defined.
-    if (!password)
-      return res.status(500).json({ message: 'password is undefined' });
+    if (!password) { return res.status(500).json({ message: 'password is undefined' }); }
 
     // extract the user information from the database
-    const data = await knex.select('*').from('users').where({ email: email });
+    const data = await knex.select('*').from('users').where({ email });
 
     // confirm the user exists
-    if (!data.length)
-      return res.status(404).json({ message: 'email not found' });
+    if (!data.length) { return res.status(404).json({ message: 'email not found' }); }
 
     console.log(`login attempt by: ${data[0].email}`);
 
@@ -76,7 +75,7 @@ const login = async function (req, res) {
 
     // Send the username and token
     return res.status(200).json({
-      token: token,
+      token,
       username: data[0].username,
     });
   } catch (error) {
@@ -99,19 +98,20 @@ const signup = async function (req, res) {
     const { email, password, username } = req.body;
 
     // confirm all required data is defined
-    if (!password || !username)
+    if (!password || !username) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
+    }
 
     // hash password with bcrypt
     const hash = await bcrypt.hash(password, saltRounds);
 
     // create a user object to insert into the users table
     const newUser = {
-      email: email,
+      email,
       password: hash,
-      username: username,
+      username,
     };
 
     // insert the new user into the users table
@@ -126,8 +126,8 @@ const signup = async function (req, res) {
 
     // send the username and token
     return res.status(201).json({
-      token: token,
-      username: data[0]['username'],
+      token,
+      username: data[0].username,
     });
   } catch (error) {
     console.log(error);
@@ -148,18 +148,19 @@ const putUser = async function (req, res) {
     const { userid, email, username } = req.body;
 
     // confirm all required data is defined
-    if (!userid || !username)
+    if (!userid || !username) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
+    }
 
     // update the user's information in the database
     const data = await knex('users')
       .returning(['email', 'username'])
       .where({ id: userid })
       .update({
-        email: email,
-        username: username,
+        email,
+        username,
       });
 
     // confirm new data exists

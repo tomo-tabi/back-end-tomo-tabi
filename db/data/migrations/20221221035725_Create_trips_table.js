@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-  return knex.schema.createTable('trips', function (table) {
+  return knex.schema.createTable('trips', (table) => {
     table.increments('id').primary();
     table.date('start_date').notNullable();
     table.date('end_date').notNullable();
