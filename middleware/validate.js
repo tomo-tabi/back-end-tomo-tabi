@@ -10,15 +10,25 @@ const { REGEX } = require('../utils/constants');
  */
 
 const emailFormat = function (req, res, next) {
-  // extract email to check from req.body
-  const { email } = req.body;
+  try {
+    // extract email to check from req.body
+    const { email } = req.body;
 
-  // Check for a valid email address
-  if (!email.match(REGEX.EMAIL))
-    return res.status(400).json({ message: 'Invalid email' });
+    // Check for a valid email address
+    if (!email.match(REGEX.EMAIL))
+      return res.status(400).json({ message: 'Invalid email' });
 
-  // else move on to next function
-  next();
+    // convert email to lowercase
+    req.body.email = email.toLowerCase();
+
+    console.log(email);
+
+    // else move on to next function
+    next();
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
 
 /**
