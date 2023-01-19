@@ -9,6 +9,14 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
   },
+  ignorePatterns: [
+    '/db',
+    'README.md',
+    '/docs',
+    '/test',
+    'package-lock.json',
+    'package.json',
+  ],
   rules: {
     'consistent-return': 'off',
     'object-curly-newline': ['error', { consistent: true }],

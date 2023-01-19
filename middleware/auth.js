@@ -4,11 +4,11 @@ const jwt = require('jsonwebtoken');
 
 // CREATE TOKEN
 
-const createToken = (userid) => {
+const createToken = userid => {
   const token = jwt.sign(
     { userid },
     process.env.ACCESS_TOKEN_SECRET || 'my secret',
-    { expiresIn: '7d' },
+    { expiresIn: '7d' }
   );
   return token;
 };
@@ -26,8 +26,9 @@ const authenticateToken = (req, res, next) => {
     const { userid } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     req.body.userid = userid;
     next();
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(error);
     return res.status(401).json({ message: 'invalid or expired token' });
   }
 };
