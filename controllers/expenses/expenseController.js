@@ -9,16 +9,13 @@ const knex = require('../../db/knex');
 
 async function getExpenses(req, res) {
   try {
-    // extract the trip id from req.params
     const { tripid } = req.params;
 
-    // confirm the trip id is defined
     if (!tripid) {
       return res.status(500).json({ message: 'trip id is undefined' });
     }
 
-    // extract the expenses associated with the trip id from the database
-    const data = await knex('expenses')
+    const expenseArray = await knex('expenses')
       .join('users', 'users.id', 'user_id')
       .select([
         'expenses.id',
@@ -30,11 +27,11 @@ async function getExpenses(req, res) {
       ])
       .where({ trip_id: tripid });
 
-    // if there are no expenses return status code 404
-    if (!data.length) return res.status(404).json({ message: 'Not found' });
+    if (!expenseArray.length) {
+      return res.status(404).json({ message: 'Not found' });
+    }
 
-    // send the data
-    return res.status(200).json(data);
+    return res.status(200).json(expenseArray);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -52,22 +49,18 @@ async function getExpenses(req, res) {
 
 async function createExpense(req, res) {
   try {
-    // extract required information from req.body
     const { userid, tripid, itemName, money } = req.body;
     let { purchaserid } = req.body;
 
-    // if a purchaser has been specified, use that instead of userid
     purchaserid = purchaserid || userid;
 
-    // confirm all required information is defined
     if (!purchaserid || !tripid || !itemName || !money) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
     }
 
-    const data = await knex.transaction(async trx => {
-      // insert the new expense object into expenses table
+    const expenseArray = await knex.transaction(async trx => {
       const id = await knex('expenses')
         .insert(
           {
@@ -80,24 +73,21 @@ async function createExpense(req, res) {
         )
         .transacting(trx);
 
-      // extract new data from users - expenses join table
-      const joinData = await knex
+      const expenseJoinData = await knex
         .select(['expenses.id', 'item_name', 'users.username', 'money'])
         .from('expenses')
         .join('users', 'user_id', 'users.id')
         .where('expenses.id', id[0].id)
         .transacting(trx);
 
-      return joinData;
+      return expenseJoinData;
     });
 
-    // confirm the new data has been saved in data
-    if (!data.length) {
+    if (!expenseArray.length) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    // send the data
-    return res.status(200).json(data);
+    return res.status(200).json(expenseArray);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -115,23 +105,19 @@ async function createExpense(req, res) {
 
 async function updateExpense(req, res) {
   try {
-    // extract all required information from req.body
     const { expenseid } = req.params;
     const { itemName, money, userid } = req.body;
     let { purchaserid } = req.body;
 
-    // if a purchaser has been specified, use that instead of userid
     purchaserid = purchaserid || userid;
 
-    // confirm all required information is defined
     if (!purchaserid || !itemName || !money || !expenseid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
     }
 
-    const data = await knex.transaction(async trx => {
-      // update expense using expenseid
+    const expenseArray = await knex.transaction(async trx => {
       const id = await knex('expenses')
         .where('id', expenseid)
         .update(
@@ -144,23 +130,21 @@ async function updateExpense(req, res) {
         )
         .transacting(trx);
 
-      // extract new data from users - expenses join table
-      const joinData = await knex
+      const expenseJoinData = await knex
         .select(['expenses.id', 'item_name', 'users.username', 'money'])
         .from('expenses')
         .join('users', 'user_id', 'users.id')
         .where('expenses.id', id[0].id)
         .transacting(trx);
 
-      return joinData;
+      return expenseJoinData;
     });
 
-    // confirm data has been saved in data
-    if (!data.length) {
+    if (!expenseArray.length) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    return res.status(200).json(data);
+    return res.status(200).json(expenseArray);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -177,22 +161,16 @@ async function updateExpense(req, res) {
 
 async function deleteExpense(req, res) {
   try {
-    // extract info from req.body and req.params
     const { expenseid } = req.params;
     const { tripid } = req.body;
 
-    // confirm all required information is defined
     if (!expenseid) {
       return res.status(500).json({ message: 'undefined variable' });
     }
 
-    // delete the expense
-    const data = await knex('expenses')
-      .where({ id: expenseid, trip_id: tripid })
-      .del(['id']);
+    const deleted = await knex('expenses').where({ id: expenseid }).del();
 
-    // ensure data has a deleted item id
-    if (!data.length) {
+    if (!deleted) {
       return res.status(404).json({ message: 'item not found' });
     }
 
@@ -213,41 +191,35 @@ async function deleteExpense(req, res) {
 
 async function getAverageExpense(req, res) {
   try {
-    // extract info from req.params
     const { tripid } = req.params;
 
-    // confirm info is defined
     if (!tripid) {
       return res.status(500).json({ message: 'trip id is undefined' });
     }
 
-    // extract all expenses related to trip from db
-    const data = await knex('expenses').select('*').where({ trip_id: tripid });
+    const expenseArray = await knex('expenses')
+      .select('*')
+      .where({ trip_id: tripid });
 
-    // confirm data exists
-    if (!data.length) {
+    if (!expenseArray.length) {
       return res.status(404).json({ message: 'item not found' });
     }
 
-    // initialize helper object
-    const helperObject = { totalMoney: 0, numUsers: 0 };
-    for (let i = 0; i < data.length; i++) {
-      // if the user hasn't been encountered yet add it and it's values to the object
-      if (!helperObject[data[i].user_id]) {
-        helperObject[data[i].user_id] = Number(data[i].money);
-        helperObject.numUsers += 1;
-        helperObject.totalMoney += Number(data[i].money);
+    const moneyAndUsers = { totalMoney: 0, numUsers: 0 };
+
+    for (let i = 0; i < expenseArray.length; i++) {
+      if (!moneyAndUsers[expenseArray[i].user_id]) {
+        moneyAndUsers[expenseArray[i].user_id] = Number(expenseArray[i].money);
+        moneyAndUsers.numUsers += 1;
+        moneyAndUsers.totalMoney += Number(expenseArray[i].money);
       } else {
-        // otherwise, add to the existing values
-        helperObject[data[i].user_id] += Number(data[i].money);
-        helperObject.totalMoney += Number(data[i].money);
+        moneyAndUsers[expenseArray[i].user_id] += Number(expenseArray[i].money);
+        moneyAndUsers.totalMoney += Number(expenseArray[i].money);
       }
     }
 
-    // calculate the average expense for the trip
-    const averageMoney = helperObject.totalMoney / helperObject.numUsers;
+    const averageMoney = moneyAndUsers.totalMoney / moneyAndUsers.numUsers;
 
-    // send the amount
     return res.status(200).json(averageMoney);
   } catch (error) {
     // eslint-disable-next-line no-console
