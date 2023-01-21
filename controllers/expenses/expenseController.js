@@ -162,7 +162,6 @@ async function updateExpense(req, res) {
 async function deleteExpense(req, res) {
   try {
     const { expenseid } = req.params;
-    const { tripid } = req.body;
 
     if (!expenseid) {
       return res.status(500).json({ message: 'undefined variable' });

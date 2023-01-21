@@ -9,31 +9,26 @@ const knex = require('../../db/knex');
 
 async function getEvents(req, res) {
   try {
-    // extract required info from req.body and req.params
     const { tripid } = req.params;
     const { userid } = req.body;
 
-    // confirm all required info is defined
     if (!userid || !tripid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
     }
 
-    // extract data from db
-    const data = await knex
+    const eventArray = await knex
       .select('*')
       .from('trips_events')
       .where('trip_id', tripid)
       .orderBy('event_date', 'asc');
 
-    // confirm data exists
-    if (!data.length) {
+    if (!eventArray.length) {
       return res.status(404).json({ message: 'item not found' });
     }
 
-    // send the data
-    return res.status(200).json(data);
+    return res.status(200).json(eventArray);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -51,18 +46,15 @@ async function getEvents(req, res) {
 
 async function createEvent(req, res) {
   try {
-    // extract required information from req.body
     const { userid, tripid, eventName, eventDate } = req.body;
 
-    // confirm all required information is defined
     if (!userid || !tripid || !eventName || !eventDate) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
     }
 
-    // insert the new event object into trips_events table
-    const data = await knex('trips_events')
+    const eventArray = await knex('trips_events')
       .returning(['id', 'event_name', 'event_date'])
       .insert({
         trip_id: tripid,
@@ -70,13 +62,11 @@ async function createEvent(req, res) {
         event_date: eventDate,
       });
 
-    // confirm the new data has been saved in data
-    if (!data.length) {
+    if (!eventArray.length) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    // send the data
-    return res.status(200).json(data);
+    return res.status(200).json(eventArray);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -94,19 +84,16 @@ async function createEvent(req, res) {
 
 async function updateEvent(req, res) {
   try {
-    // extract required information from req.body
     const { eventid } = req.params;
     const { userid, tripid, eventName, eventDate } = req.body;
 
-    // confirm all required information is defined
     if (!userid || !tripid || !eventid || !eventName || !eventDate) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
     }
 
-    // update the event row
-    const data = await knex('trips_events')
+    const eventArray = await knex('trips_events')
       .returning(['id', 'event_name', 'event_date'])
       .where('id', eventid)
       .update({
@@ -114,13 +101,11 @@ async function updateEvent(req, res) {
         event_date: eventDate,
       });
 
-    // confirm the new data has been saved in data
-    if (!data.length) {
+    if (!eventArray.length) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    // send the data
-    return res.status(200).json(data);
+    return res.status(200).json(eventArray);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -138,29 +123,21 @@ async function updateEvent(req, res) {
 
 async function deleteEvent(req, res) {
   try {
-    // extract required information from req.body
     const { eventid } = req.params;
     const { userid, tripid } = req.body;
 
-    // confirm all required information is defined
     if (!userid || !tripid || !eventid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
     }
 
-    // delete the event
-    const data = await knex('trips_events').where('id', eventid).del(['id']);
+    const deleted = await knex('trips_events').where('id', eventid).del(['id']);
 
-    // confirm the new data has been saved in data
-    if (!data.length) {
+    if (!deleted) {
       return res.status(404).json({ message: 'item not found' });
     }
 
-    // eslint-disable-next-line no-console
-    console.log(`event id: ${data[0].id} deleted`);
-
-    // send 200
     return res.status(200).json({ message: 'item deleted' });
   } catch (error) {
     // eslint-disable-next-line no-console

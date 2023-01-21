@@ -14,28 +14,23 @@ const saltRounds = 10;
 
 async function getUser(req, res) {
   try {
-    // extract the userid from req.body
     const { userid } = req.body;
 
-    // if there is no userid present, return an error message
     if (!userid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
     }
 
-    // extract the user's email and username from the database
-    const data = await knex('users')
+    const userArray = await knex('users')
       .select('email', 'username')
       .where({ id: userid });
 
-    // if there is no data, return an error message
-    if (!data.length) {
+    if (!userArray.length) {
       return res.status(404).json({ message: 'user information not found' });
     }
 
-    // send the user information
-    return res.status(200).json(data[0]);
+    return res.status(200).json(userArray[0]);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -53,38 +48,27 @@ async function getUser(req, res) {
 
 async function login(req, res) {
   try {
-    // extract the user's email and password from req.body
     const { email, password } = req.body;
 
-    // confirm that the password is defined.
     if (!password) {
       return res.status(500).json({ message: 'password is undefined' });
     }
 
-    // extract the user information from the database
-    const data = await knex.select('*').from('users').where({ email });
+    const userArray = await knex.select('*').from('users').where({ email });
 
-    // confirm the user exists
-    if (!data.length) {
+    if (!userArray.length) {
       return res.status(404).json({ message: 'email not found' });
     }
 
-    // eslint-disable-next-line no-console
-    console.log(`login attempt by: ${data[0].email}`);
+    const valid = await bcrypt.compare(password, userArray[0].password);
 
-    // use bcrypt to compare the raw password to the hashed password in the database
-    const valid = await bcrypt.compare(password, data[0].password);
-
-    // if the password is incorrect exit the function
     if (!valid) return res.status(401).json({ message: 'incorrect password' });
 
-    // create a jwt token containing the user's id
-    const token = auth.createToken(data[0].id);
+    const token = auth.createToken(userArray[0].id);
 
-    // Send the username and token
     return res.status(200).json({
       token,
-      username: data[0].username,
+      username: userArray[0].username,
     });
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -103,38 +87,27 @@ async function login(req, res) {
 
 async function signup(req, res) {
   try {
-    // extract the users information from req.body
     const { email, password, username } = req.body;
 
-    // confirm all required data is defined
     if (!password || !username) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
     }
 
-    // hash password with bcrypt
     const hash = await bcrypt.hash(password, saltRounds);
 
-    // create a user object to insert into the users table
-    const newUser = {
+    const userArray = await knex('users').returning(['id', 'username']).insert({
       email,
       password: hash,
       username,
-    };
+    });
 
-    // insert the new user into the users table
-    const data = await knex('users')
-      .returning(['id', 'username'])
-      .insert(newUser);
+    const token = auth.createToken(userArray[0].id);
 
-    // create a jwt token containing the user id
-    const token = auth.createToken(data[0].id);
-
-    // send the username and token
     return res.status(201).json({
       token,
-      username: data[0].username,
+      username: userArray[0].username,
     });
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -152,18 +125,15 @@ async function signup(req, res) {
 
 async function putUser(req, res) {
   try {
-    // extract all required information from req.body
     const { userid, email, username } = req.body;
 
-    // confirm all required data is defined
     if (!userid || !username) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
     }
 
-    // update the user's information in the database
-    const data = await knex('users')
+    const userArray = await knex('users')
       .returning(['email', 'username'])
       .where({ id: userid })
       .update({
@@ -171,13 +141,11 @@ async function putUser(req, res) {
         username,
       });
 
-    // confirm new data exists
-    if (!data.length) {
+    if (!userArray.length) {
       return res.status(500).json({ message: 'Internal server error' });
     }
 
-    // send the data
-    return res.status(200).json(data[0]);
+    return res.status(200).json(userArray[0]);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
