@@ -12,26 +12,21 @@ const { getIdFromEmail } = require('../../utils/getID');
 
 async function getInvites(req, res) {
   try {
-    // extract the userid from req.body
     const { userid } = req.body;
 
-    // confirm the userid is defined
     if (!userid) return res.status(500).json('user id is undefined');
 
-    // extract the invites associated with the user
-    const data = await knex('invites')
+    const pendingInviteArray = await knex('invites')
       .join('users', 'sender_id', 'users.id')
       .join('trips', 'trip_id', 'trips.id')
       .select(['invites.id', 'status', 'trips.name', 'email', 'username'])
       .where({ receiver_id: userid, status: PENDING });
 
-    // check that info exists
-    if (!data.length) {
+    if (!pendingInviteArray.length) {
       return res.status(404).json({ message: 'no invites found' });
     }
 
-    // send the data
-    return res.status(200).json(data);
+    return res.status(200).json(pendingInviteArray);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -48,17 +43,15 @@ async function getInvites(req, res) {
 
 async function createInvite(req, res) {
   try {
-    // extract required information from req.body
     const { userid, tripid, email } = req.body;
 
     const receiverid = await getIdFromEmail(email);
 
-    // confirm all required information is defined
     if (!userid || !receiverid || !tripid) {
       return res.status(500).json('required variable is undefined');
     }
 
-    const data = await knex('invites').insert(
+    const inviteIdArray = await knex('invites').insert(
       {
         sender_id: userid,
         receiver_id: receiverid,
@@ -68,12 +61,10 @@ async function createInvite(req, res) {
       'id'
     );
 
-    // confirm the new data has been saved in data
-    if (!data.length) {
+    if (!inviteIdArray.length) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    // send status code 'CREATED'
     return res.status(201).json({ message: 'invite created' });
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -91,23 +82,19 @@ async function createInvite(req, res) {
 
 async function acceptInvite(req, res) {
   try {
-    // extract all required information from req.body
     const { inviteid } = req.params;
     const { userid } = req.body;
 
-    // confirm all required information is defined
     if (!inviteid || !userid) {
       return res.status(500).json('required variable is undefined');
     }
 
     await knex.transaction(async trx => {
-      // update invite to accepted using inviteid
       const tripid = await knex('invites')
         .where('id', inviteid)
         .update({ status: ACCEPTED }, ['trip_id'])
         .transacting(trx);
 
-      // update users_trips
       await knex('users_trips')
         .insert({ user_id: userid, trip_id: tripid[0].trip_id })
         .transacting(trx);
@@ -130,20 +117,22 @@ async function acceptInvite(req, res) {
 
 async function rejectInvite(req, res) {
   try {
-    // extract all required information from req.body
     const { inviteid } = req.params;
     const { userid } = req.body;
 
-    // confirm all required information is defined
     if (!inviteid || !userid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
     }
 
-    await knex('invites')
+    const inviteIdArray = await knex('invites')
       .where('id', inviteid)
-      .update({ status: REJECTED }, ['trip_id']);
+      .update({ status: REJECTED }, ['id']);
+
+    if (!inviteIdArray.length) {
+      return res.status(404).json({ message: 'item not found' });
+    }
 
     return res.status(200).json({ message: 'invite rejected' });
   } catch (error) {
@@ -162,21 +151,17 @@ async function rejectInvite(req, res) {
 
 async function deleteInvite(req, res) {
   try {
-    // extract info from req.body and req.params
     const { inviteid } = req.params;
 
-    // confirm all required information is defined
     if (!inviteid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
     }
 
-    // delete the expense
-    const data = await knex('invites').where({ id: inviteid }).del();
+    const deleted = await knex('invites').where({ id: inviteid }).del();
 
-    // ensure data has a deleted item id
-    if (!data) return res.status(404).json({ message: 'item not found' });
+    if (!deleted) return res.status(404).json({ message: 'item not found' });
 
     return res.status(200).json({ message: 'item deleted' });
   } catch (error) {
