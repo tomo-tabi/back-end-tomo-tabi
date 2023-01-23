@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-  return knex.schema.alterTable('expenses', function (table) {
+  return knex.schema.alterTable('expenses', (table) => {
     table.integer('trip_id').notNullable();
     table.foreign('trip_id').references('trips.id');
   });
@@ -14,7 +14,7 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-  return knex.schema.alterTable('expenses', function (table) {
+  return knex.schema.alterTable('expenses', (table) => {
     table.dropColumn('trip_id');
   });
 };

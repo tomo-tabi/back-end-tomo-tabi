@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const inviteCtrl = require('../../controllers/invites/inviteController');
 const { authenticateToken } = require('../../middleware/auth');
@@ -14,7 +15,7 @@ router.post(
   emailFormat,
   emailExists,
   userToTrip,
-  inviteCtrl.createInvite
+  inviteCtrl.createInvite,
 );
 router.put('/accept/:inviteid', inviteCtrl.acceptInvite);
 router.put('/reject/:inviteid', inviteCtrl.rejectInvite);
