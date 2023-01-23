@@ -70,7 +70,7 @@ async function createInvite(req, res) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    return res.status(201).json({ message: 'invite created' });
+    return res.sendStatus(201);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -105,7 +105,7 @@ async function acceptInvite(req, res) {
         .transacting(trx);
     });
 
-    return res.status(200).json({ message: 'invite accepted' });
+    return res.sendStatus(200);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -139,7 +139,7 @@ async function rejectInvite(req, res) {
       return res.status(404).json({ message: 'item not found' });
     }
 
-    return res.status(200).json({ message: 'invite rejected' });
+    return res.sendStatus(200);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -168,7 +168,7 @@ async function deleteInvite(req, res) {
 
     if (!deleted) return res.status(404).json({ message: 'item not found' });
 
-    return res.status(200).json({ message: 'item deleted' });
+    return res.sendStatus(200);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);

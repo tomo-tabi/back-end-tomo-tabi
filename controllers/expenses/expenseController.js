@@ -87,7 +87,7 @@ async function createExpense(req, res) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    return res.status(200).json(expenseArray);
+    return res.sendStatus(201);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -144,7 +144,7 @@ async function updateExpense(req, res) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    return res.status(200).json(expenseArray);
+    return res.sendStatus(200);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -173,7 +173,7 @@ async function deleteExpense(req, res) {
       return res.status(404).json({ message: 'item not found' });
     }
 
-    return res.status(200).json({ message: 'item deleted' });
+    return res.sendStatus(200);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -183,6 +183,7 @@ async function deleteExpense(req, res) {
 
 /**
  * Respond to a GET request to API_URL/expense/average/:tripid with status code 200
+ * @todo make this reflect the newer front end logic
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
  * @returns {Response} returns an http status code

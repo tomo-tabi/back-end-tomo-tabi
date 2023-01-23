@@ -66,10 +66,12 @@ async function login(req, res) {
 
     const token = auth.createToken(userArray[0].id);
 
-    return res.status(200).json({
+    const loginObject = {
       token,
       username: userArray[0].username,
-    });
+    };
+
+    return res.status(200).json(loginObject);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -105,10 +107,12 @@ async function signup(req, res) {
 
     const token = auth.createToken(userArray[0].id);
 
-    return res.status(201).json({
+    const loginObject = {
       token,
       username: userArray[0].username,
-    });
+    };
+
+    return res.status(201).json(loginObject);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -145,7 +149,7 @@ async function putUser(req, res) {
       return res.status(500).json({ message: 'Internal server error' });
     }
 
-    return res.status(200).json(userArray[0]);
+    return res.sendStatus(200);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
