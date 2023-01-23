@@ -112,7 +112,7 @@ const updateExpense = async function (req, res) {
   try {
     // extract all required information from req.body
     const { expenseid } = req.params;
-    const { itemName, money } = req.body;
+    const { userid, itemName, money } = req.body;
     let { purchaserid } = req.body;
 
     // if a purchaser has been specified, use that instead of userid
