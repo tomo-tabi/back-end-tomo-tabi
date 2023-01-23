@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const timelineCtrl = require('../../controllers/timeline/timelineController');
 const { authenticateToken } = require('../../middleware/auth');

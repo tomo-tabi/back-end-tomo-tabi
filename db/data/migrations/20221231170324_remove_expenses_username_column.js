@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-  return knex.schema.alterTable('expenses', function (table) {
+  return knex.schema.alterTable('expenses', (table) => {
     table.dropColumn('username');
   });
 };
@@ -13,7 +13,7 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-  return knex.schema.alterTable('expenses', function (table) {
+  return knex.schema.alterTable('expenses', (table) => {
     table.string('username', 255).notNullable();
   });
 };

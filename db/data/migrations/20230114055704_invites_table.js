@@ -3,7 +3,7 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-  return knex.schema.createTable('invites', function (table) {
+  return knex.schema.createTable('invites', (table) => {
     table.increments('id').primary();
     table.integer('sender_id').notNullable();
     table.foreign('sender_id').references('users.id');
