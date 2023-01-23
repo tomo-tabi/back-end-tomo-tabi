@@ -98,7 +98,7 @@ async function createTrip(req, res) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    return res.sendStatus(200);
+    return res.sendStatus(201);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -177,8 +177,8 @@ async function deleteTrip(req, res) {
 
 module.exports = {
   getTrips,
+  getTripUsers,
   createTrip,
   updateTrip,
   deleteTrip,
-  getTripUsers,
 };
