@@ -1,4 +1,5 @@
 const express = require('express');
+
 const router = express.Router();
 const expenseCtrl = require('../../controllers/expenses/expenseController');
 const { authenticateToken } = require('../../middleware/auth');
