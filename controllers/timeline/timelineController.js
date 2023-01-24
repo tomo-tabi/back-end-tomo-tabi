@@ -18,6 +18,9 @@ async function getEvents(req, res) {
         .json({ message: 'required variable is undefined' });
     }
 
+    /**
+     * @todo #112 getEvents also return num yes votes (maybe also num users in trip?)
+     */
     const eventArray = await knex
       .select('*')
       .from('trips_events')
@@ -37,11 +40,10 @@ async function getEvents(req, res) {
 }
 
 /**
- * Respond to a POST request to API_URL/timeline/create with all information regarding
- * the new event.
+ * Respond to a POST request to API_URL/timeline/create
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
- * @returns {Response} returns an http response containing the new expense object
+ * @returns {Response} returns an http 201 status
  */
 
 async function createEvent(req, res) {
