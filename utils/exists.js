@@ -7,7 +7,7 @@ async function inviteExists(senderid, receiverid, tripid) {
       .from('invites')
       .where({ sender_id: senderid, receiver_id: receiverid, trip_id: tripid });
 
-    return exists.length;
+    return !!exists.length;
   } catch (error) {
     throw error;
   }
