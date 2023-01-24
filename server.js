@@ -29,7 +29,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT || 80, '0.0.0.0', () => {
   // eslint-disable-next-line no-console
-  console.log(`Server running on port: ${port}`);
+  console.log(`Server running on port: ${PORT}`);
 });
 
 module.exports = app;
