@@ -23,7 +23,7 @@ app.use('/timeline', timelineRoutes);
 app.use('/expense', expenseRoutes);
 app.use('/invite', inviteRoutes);
 
-app.get('/', (req, res) => {
+app.get('*', (req, res) => {
   return res.sendStatus(404);
 });
 
