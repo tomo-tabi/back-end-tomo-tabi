@@ -23,7 +23,11 @@ app.use('/timeline', timelineRoutes);
 app.use('/expense', expenseRoutes);
 app.use('/invite', inviteRoutes);
 
-app.listen(port, () => {
+app.use('*', (req, res) => {
+  return res.sendStatus(400);
+});
+
+app.listen(port, '0.0.0.0', () => {
   // eslint-disable-next-line no-console
   console.log(`Server running on port: ${port}`);
 });
