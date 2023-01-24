@@ -6,7 +6,7 @@ const app = express();
 const cors = require('cors');
 const timeout = require('connect-timeout');
 
-const port = process.env.PORT || 80;
+const port = process.env.PORT || 8080;
 const userRoutes = require('./routes/users/userRoutes');
 const tripRoutes = require('./routes/trips/tripRoutes');
 const timelineRoutes = require('./routes/timeline/timelineRoutes');
@@ -27,7 +27,7 @@ app.get('*', (req, res) => {
   return res.sendStatus(404);
 });
 
-app.listen(port || 80, '0.0.0.0', () => {
+app.listen(port, '0.0.0.0', () => {
   // eslint-disable-next-line no-console
   console.log(`Server running on port: ${port}`);
 });
