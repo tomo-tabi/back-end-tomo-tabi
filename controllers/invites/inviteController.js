@@ -52,7 +52,7 @@ async function createInvite(req, res) {
       return res.status(500).json('required variable is undefined');
     }
 
-    if (inviteExists(userid, receiverid, tripid)) {
+    if (inviteExists(userid, receiverid, tripid).length) {
       return res.status(400).json({ message: 'invite exists' });
     }
 
