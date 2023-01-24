@@ -45,7 +45,7 @@ async function createNoVote(req, res) {}
  * @returns {Response} returns an http 200 status
  */
 
-async function updateYesVote(req, res) {}
+async function updateToYesVote(req, res) {}
 
 /**
  * Respond to a PUT request to API_URL/vote/no/:voteid
@@ -54,7 +54,7 @@ async function updateYesVote(req, res) {}
  * @returns {Response} returns an http 200 status
  */
 
-async function updateNoVote(req, res) {}
+async function updateToNoVote(req, res) {}
 
 /**
  * Respond to a DELETE request to API_URL/vote/:voteid
@@ -70,6 +70,7 @@ module.exports = {
   getUserVote,
   createYesVote,
   createNoVote,
-  updateYesVote,
-  updateNoVote,
+  updateToYesVote,
+  updateToNoVote,
+  deleteVote,
 };
