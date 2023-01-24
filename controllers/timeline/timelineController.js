@@ -66,7 +66,7 @@ async function createEvent(req, res) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    return res.status(200).json(eventArray);
+    return res.sendStatus(201);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -105,7 +105,7 @@ async function updateEvent(req, res) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    return res.status(200).json(eventArray);
+    return res.sendStatus(200);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -138,7 +138,7 @@ async function deleteEvent(req, res) {
       return res.status(404).json({ message: 'item not found' });
     }
 
-    return res.status(200).json({ message: 'item deleted' });
+    return res.sendStatus(200);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);

@@ -2,6 +2,7 @@ const knex = require('../../db/knex');
 
 const [ACCEPTED, REJECTED, PENDING] = ['accepted', 'rejected', 'pending'];
 const { getIdFromEmail } = require('../../utils/getID');
+const { inviteExists } = require('../../utils/exists');
 
 /**
  * Respond to a GET request to API_URL/invite/
@@ -51,6 +52,10 @@ async function createInvite(req, res) {
       return res.status(500).json('required variable is undefined');
     }
 
+    if (inviteExists(userid, receiverid)) {
+      return res.status(400).json({ message: 'invite exists' });
+    }
+
     const inviteIdArray = await knex('invites').insert(
       {
         sender_id: userid,
@@ -65,7 +70,7 @@ async function createInvite(req, res) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
-    return res.status(201).json({ message: 'invite created' });
+    return res.sendStatus(201);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -100,7 +105,7 @@ async function acceptInvite(req, res) {
         .transacting(trx);
     });
 
-    return res.status(200).json({ message: 'invite accepted' });
+    return res.sendStatus(200);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -134,7 +139,7 @@ async function rejectInvite(req, res) {
       return res.status(404).json({ message: 'item not found' });
     }
 
-    return res.status(200).json({ message: 'invite rejected' });
+    return res.sendStatus(200);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -163,7 +168,7 @@ async function deleteInvite(req, res) {
 
     if (!deleted) return res.status(404).json({ message: 'item not found' });
 
-    return res.status(200).json({ message: 'item deleted' });
+    return res.sendStatus(200);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
