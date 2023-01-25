@@ -13,6 +13,7 @@ const { userToTrip } = require('../../middleware/validate');
 router.use(authenticateToken);
 
 router.get('/', inviteCtrl.getInvites);
+router.get('/sent/:tripid', userToTrip, inviteCtrl.getSentInvites);
 router.post(
   '/create',
   emailFormat,

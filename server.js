@@ -12,6 +12,7 @@ const tripRoutes = require('./routes/trips/tripRoutes');
 const timelineRoutes = require('./routes/timeline/timelineRoutes');
 const expenseRoutes = require('./routes/expenses/expenseRoutes');
 const inviteRoutes = require('./routes/invites/inviteRoutes');
+const voteRoutes = require('./routes/votes/voteRoutes');
 
 app.use(cors());
 app.use(express.json());
@@ -22,6 +23,7 @@ app.use('/trip', tripRoutes);
 app.use('/timeline', timelineRoutes);
 app.use('/expense', expenseRoutes);
 app.use('/invite', inviteRoutes);
+app.use('/vote', voteRoutes);
 
 app.use('*', (req, res) => {
   return res.sendStatus(400);
