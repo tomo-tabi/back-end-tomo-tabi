@@ -5,7 +5,7 @@ const knex = require('../../db/knex');
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
  * @returns {Response} returns an array of vote table objects containing
- * { [ { username, vote } ], numOfUsers, numOfYesVotes, numOfNoVotes, numNotVoted }
+ * { [ { username, vote } ], numOfYesVotes, numOfNoVotes, numNotVoted }
  */
 
 async function getVotes(req, res) {}
