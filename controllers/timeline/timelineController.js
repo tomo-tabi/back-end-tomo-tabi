@@ -48,7 +48,7 @@ async function createEvent(req, res) {
   try {
     const { userid, tripid, eventName, eventDate, description } = req.body;
 
-    if (!userid || !tripid || !eventName || !eventDate || !description) {
+    if (!userid || !tripid || !eventName || !eventDate) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
@@ -88,7 +88,7 @@ async function updateEvent(req, res) {
     const { eventid } = req.params;
     const { userid, tripid, eventName, eventDate, description } = req.body;
 
-    if (!userid || !tripid || !eventid || !eventName || !eventDate || !description) {
+    if (!userid || !tripid || !eventid || !eventName || !eventDate) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
