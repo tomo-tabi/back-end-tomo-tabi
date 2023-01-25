@@ -48,7 +48,7 @@ async function exitOnEmailExists(req, res, next) {
 
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 }
@@ -75,7 +75,7 @@ async function exitOnEmailNotExists(req, res, next) {
 
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 }
@@ -98,7 +98,7 @@ async function userToTrip(req, res, next) {
 
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 }
