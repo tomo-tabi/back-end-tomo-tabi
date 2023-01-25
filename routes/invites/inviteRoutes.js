@@ -9,7 +9,6 @@ const {
 } = require('../../middleware/validate');
 const { userToTrip } = require('../../middleware/validate');
 
-// require jwt authentification for all subsequent requests
 router.use(authenticateToken);
 
 router.get('/', inviteCtrl.getInvites);

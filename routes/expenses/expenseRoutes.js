@@ -5,7 +5,6 @@ const expenseCtrl = require('../../controllers/expenses/expenseController');
 const { authenticateToken } = require('../../middleware/auth');
 const { userToTrip } = require('../../middleware/validate');
 
-// require jwt authentification for all subsequent requests
 router.use(authenticateToken);
 
 router.get('/:tripid', userToTrip, expenseCtrl.getExpenses);

@@ -29,7 +29,6 @@ async function getTrips(req, res) {
 
     return res.status(200).json(tripArray);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -55,7 +54,6 @@ async function getTripUsers(req, res) {
 
     return res.status(200).json(usersInTrip);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
@@ -100,7 +98,6 @@ async function createTrip(req, res) {
 
     return res.sendStatus(201);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -137,7 +134,6 @@ async function updateTrip(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -169,7 +165,6 @@ async function deleteTrip(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal server error' });
   }
