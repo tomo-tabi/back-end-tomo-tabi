@@ -48,7 +48,7 @@ async function getEvents(req, res) {
 
 async function createEvent(req, res) {
   try {
-    const { userid, tripid, eventName, eventDate } = req.body;
+    const { userid, tripid, eventName, eventDate, description } = req.body;
 
     if (!userid || !tripid || !eventName || !eventDate) {
       return res
@@ -57,11 +57,12 @@ async function createEvent(req, res) {
     }
 
     const eventArray = await knex('trips_events')
-      .returning(['id', 'event_name', 'event_date'])
+      .returning(['id', 'event_name', 'event_date', 'description'])
       .insert({
         trip_id: tripid,
         event_name: eventName,
         event_date: eventDate,
+        description: description
       });
 
     if (!eventArray.length) {
@@ -87,7 +88,7 @@ async function createEvent(req, res) {
 async function updateEvent(req, res) {
   try {
     const { eventid } = req.params;
-    const { userid, tripid, eventName, eventDate } = req.body;
+    const { userid, tripid, eventName, eventDate, description } = req.body;
 
     if (!userid || !tripid || !eventid || !eventName || !eventDate) {
       return res
@@ -96,11 +97,12 @@ async function updateEvent(req, res) {
     }
 
     const eventArray = await knex('trips_events')
-      .returning(['id', 'event_name', 'event_date'])
+      .returning(['id', 'event_name', 'event_date', 'description'])
       .where('id', eventid)
       .update({
         event_name: eventName,
         event_date: eventDate,
+        description: description
       });
 
     if (!eventArray.length) {

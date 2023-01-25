@@ -15,7 +15,7 @@ async function getInvites(req, res) {
   try {
     const { userid } = req.body;
 
-    if (!userid) return res.status(500).json('user id is undefined');
+    if (!userid) return res.status(500).json('invalid token');
 
     const pendingInviteArray = await knex('invites')
       .join('users', 'sender_id', 'users.id')
@@ -28,6 +28,38 @@ async function getInvites(req, res) {
     }
 
     return res.status(200).json(pendingInviteArray);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
+
+/**
+ * Respond to a GET request to API_URL/invite/sent/:tripid
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an array of invites sent by user
+ * {"email": "user2@test.com", "username": "user2", "status": "rejected"}
+ */
+
+async function getSentInvites(req, res) {
+  try {
+    const { userid } = req.body;
+    const { tripid } = req.params;
+
+    if (!userid || !tripid) return res.status(500).json('invalid token');
+
+    const sentInviteArray = await knex('invites')
+      .join('users', 'receiver_id', 'users.id')
+      .select(['invites.id', 'email', 'username', 'status'])
+      .where({ sender_id: userid, trip_id: tripid });
+
+    if (!sentInviteArray.length) {
+      return res.status(404).json({ message: 'no invites found' });
+    }
+
+    return res.status(200).json(sentInviteArray);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -52,7 +84,7 @@ async function createInvite(req, res) {
       return res.status(500).json('required variable is undefined');
     }
 
-    if (inviteExists(userid, receiverid)) {
+    if (await inviteExists(userid, receiverid, tripid)) {
       return res.status(400).json({ message: 'invite exists' });
     }
 
@@ -178,6 +210,7 @@ async function deleteInvite(req, res) {
 
 module.exports = {
   getInvites,
+  getSentInvites,
   createInvite,
   acceptInvite,
   rejectInvite,
