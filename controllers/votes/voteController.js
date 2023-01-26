@@ -170,7 +170,27 @@ async function updateToNoVote(req, res) {}
  * @returns {Response} returns an http 200 status
  */
 
-async function deleteVote(req, res) {}
+async function deleteVote(req, res) {
+  try {
+    const { voteid } = req.params;
+
+    if (!voteid) {
+      return res.status(500).json({ message: 'required info is not defined' });
+    }
+
+    const data = await knex('users_events_vote')
+      .where({ id: voteid })
+      .del(['vote']);
+
+    if (!data.length) {
+      return res.status(404).json({ message: 'item not found' });
+    }
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
 
 module.exports = {
   getVotes,
