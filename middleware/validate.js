@@ -103,9 +103,27 @@ async function userToTrip(req, res, next) {
   }
 }
 
+async function getTripIdFromEventId(req, res, next) {
+  try {
+    const { eventid } = req.params;
+
+    const tripid = await knex('trips_events')
+      .select('trip_id')
+      .where('id', eventid);
+
+    req.body.tripid = tripid[0].trip_id;
+
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
+
 module.exports = {
   emailFormat,
   exitOnEmailExists,
   exitOnEmailNotExists,
   userToTrip,
+  getTripIdFromEventId,
 };

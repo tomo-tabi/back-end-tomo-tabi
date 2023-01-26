@@ -8,7 +8,47 @@ const knex = require('../../db/knex');
  * { [ { username, vote } ], numOfYesVotes, numOfNoVotes, numNotVoted }
  */
 
-async function getVotes(req, res) {}
+async function getVotes(req, res) {
+  try {
+    const { eventid } = req.params;
+    const { tripid } = req.body;
+
+    if (!eventid) {
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
+    }
+
+    const voteArray = await knex('users_events_vote')
+      .join('users', 'user_id', 'users.id')
+      .select(['username', 'vote']);
+
+    const numUsersInTrip = (
+      await knex('users_trips').where('trip_id', tripid).count()
+    )[0].count;
+
+    const numYesVotes = voteArray.filter(object => {
+      return object.vote;
+    }).length;
+
+    const numNoVotes = voteArray.filter(object => {
+      return !object.vote;
+    }).length;
+
+    const numNotVoted = numUsersInTrip - numYesVotes - numNoVotes;
+
+    if (!voteArray.length) {
+      return res.status(404).json({ message: 'No Votes' });
+    }
+
+    return res
+      .status(200)
+      .json({ voteArray, numYesVotes, numNoVotes, numNotVoted });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
 
 /**
  * Respond to a GET request to API_URL/vote/:eventid/user
