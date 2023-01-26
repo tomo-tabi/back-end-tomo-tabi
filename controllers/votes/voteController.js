@@ -46,7 +46,7 @@ async function getVotes(req, res) {
       .json({ voteArray, numYesVotes, numNoVotes, numNotVoted });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 }
 
@@ -58,7 +58,25 @@ async function getVotes(req, res) {
  * {vote, voteid}
  */
 
-async function getUserVote(req, res) {}
+async function getUserVote(req, res) {
+  try {
+    const { eventid } = req.params;
+    const { userid } = req.body;
+
+    const userVoteArray = await knex('users_events_vote')
+      .select(['id', 'vote'])
+      .where({ id: eventid, user_id: userid });
+
+    if (!userVoteArray.length) {
+      return res.status(200).json([{ id: null, vote: null }]);
+    }
+
+    return res.status(200).json(userVoteArray);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
 
 /**
  * Respond to a POST request to API_URL/vote/yes/:eventid
