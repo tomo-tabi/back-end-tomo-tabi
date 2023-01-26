@@ -27,13 +27,9 @@ async function getVotes(req, res) {
       await knex('users_trips').where('trip_id', tripid).count()
     )[0].count;
 
-    const numYesVotes = voteArray.filter(object => {
-      return object.vote;
-    }).length;
+    const numYesVotes = voteArray.filter(object => object.vote).length;
 
-    const numNoVotes = voteArray.filter(object => {
-      return !object.vote;
-    }).length;
+    const numNoVotes = voteArray.filter(object => !object.vote).length;
 
     const numNotVoted = numUsersInTrip - numYesVotes - numNoVotes;
 
