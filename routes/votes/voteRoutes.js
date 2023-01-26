@@ -6,6 +6,7 @@ const { authenticateToken } = require('../../middleware/auth');
 const {
   getTripIdFromEventId,
   userToTrip,
+  userToVote,
 } = require('../../middleware/validate');
 
 router.use(authenticateToken);
@@ -19,8 +20,8 @@ router.get(
 );
 router.post('/yes/:eventid', voteCtrl.createYesVote);
 router.post('/no/:eventid', voteCtrl.createNoVote);
-router.put('/yes/:voteid', voteCtrl.updateToYesVote);
-router.put('/no/:voteid', voteCtrl.updateToNoVote);
-router.delete('/:voteid', voteCtrl.deleteVote);
+router.put('/yes/:voteid', userToVote, voteCtrl.updateToYesVote);
+router.put('/no/:voteid', userToVote, voteCtrl.updateToNoVote);
+router.delete('/:voteid', userToVote, voteCtrl.deleteVote);
 
 module.exports = router;

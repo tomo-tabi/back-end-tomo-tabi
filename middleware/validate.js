@@ -120,10 +120,33 @@ async function getTripIdFromEventId(req, res, next) {
   }
 }
 
+async function userToVote(req, res, next) {
+  try {
+    const { userid } = req.body;
+    const { voteid } = req.params;
+
+    const valid = (
+      await knex('users_events_vote')
+        .select(['id', 'vote'])
+        .where({ id: voteid, user_id: userid })
+    ).length;
+
+    if (!valid) {
+      return res.status(403).json({ message: 'unauthorized' });
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
+
 module.exports = {
   emailFormat,
   exitOnEmailExists,
   exitOnEmailNotExists,
   userToTrip,
   getTripIdFromEventId,
+  userToVote,
 };

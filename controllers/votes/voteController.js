@@ -65,7 +65,7 @@ async function getUserVote(req, res) {
 
     const userVoteArray = await knex('users_events_vote')
       .select(['id', 'vote'])
-      .where({ id: eventid, user_id: userid });
+      .where({ trips_events_id: eventid, user_id: userid });
 
     if (!userVoteArray.length) {
       return res.status(200).json([{ id: null, vote: null }]);
@@ -131,7 +131,27 @@ async function createNoVote(req, res) {}
  * @returns {Response} returns an http 200 status
  */
 
-async function updateToYesVote(req, res) {}
+async function updateToYesVote(req, res) {
+  try {
+    const { voteid } = req.params;
+
+    const updatedVoteArray = await knex('users_events_vote')
+      .returning(['id'])
+      .where({ id: voteid })
+      .update({
+        vote: true,
+      });
+
+    if (!updatedVoteArray.length) {
+      return res.status(404).json({ message: 'Vote Not Found' });
+    }
+
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
 
 /**
  * Respond to a PUT request to API_URL/vote/no/:voteid
@@ -140,7 +160,27 @@ async function updateToYesVote(req, res) {}
  * @returns {Response} returns an http 200 status
  */
 
-async function updateToNoVote(req, res) {}
+async function updateToNoVote(req, res) {
+  try {
+    const { voteid } = req.params;
+
+    const updatedVoteArray = await knex('users_events_vote')
+      .returning(['id'])
+      .where({ id: voteid })
+      .update({
+        vote: false,
+      });
+
+    if (!updatedVoteArray.length) {
+      return res.status(404).json({ message: 'Vote Not Found' });
+    }
+
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
 
 /**
  * Respond to a DELETE request to API_URL/vote/:voteid
@@ -149,7 +189,24 @@ async function updateToNoVote(req, res) {}
  * @returns {Response} returns an http 200 status
  */
 
-async function deleteVote(req, res) {}
+async function deleteVote(req, res) {
+  try {
+    const { voteid } = req.params;
+
+    const numDeleted = await knex('users_events_vote')
+      .where({ id: voteid })
+      .del();
+
+    if (!numDeleted) {
+      return res.status(404).json({ message: 'Vote Not Found' });
+    }
+
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
 
 module.exports = {
   getVotes,
