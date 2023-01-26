@@ -33,7 +33,6 @@ async function getEvents(req, res) {
 
     return res.status(200).json(eventArray);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -62,7 +61,7 @@ async function createEvent(req, res) {
         trip_id: tripid,
         event_name: eventName,
         event_date: eventDate,
-        description: description
+        description,
       });
 
     if (!eventArray.length) {
@@ -71,7 +70,6 @@ async function createEvent(req, res) {
 
     return res.sendStatus(201);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -102,7 +100,7 @@ async function updateEvent(req, res) {
       .update({
         event_name: eventName,
         event_date: eventDate,
-        description: description
+        description,
       });
 
     if (!eventArray.length) {
@@ -111,7 +109,6 @@ async function updateEvent(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -144,7 +141,6 @@ async function deleteEvent(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }

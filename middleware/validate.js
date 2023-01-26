@@ -21,7 +21,6 @@ function emailFormat(req, res, next) {
 
     next();
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -49,8 +48,7 @@ async function exitOnEmailExists(req, res, next) {
 
     next();
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 }
@@ -77,8 +75,7 @@ async function exitOnEmailNotExists(req, res, next) {
 
     next();
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 }
@@ -101,8 +98,46 @@ async function userToTrip(req, res, next) {
 
     next();
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error);
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
+
+async function getTripIdFromEventId(req, res, next) {
+  try {
+    const { eventid } = req.params;
+
+    const tripid = await knex('trips_events')
+      .select('trip_id')
+      .where('id', eventid);
+
+    req.body.tripid = tripid[0].trip_id;
+
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
+
+async function userToVote(req, res, next) {
+  try {
+    const { userid } = req.body;
+    const { voteid } = req.params;
+
+    const valid = (
+      await knex('users_events_vote')
+        .select(['id', 'vote'])
+        .where({ id: voteid, user_id: userid })
+    ).length;
+
+    if (!valid) {
+      return res.status(403).json({ message: 'unauthorized' });
+    }
+
+    next();
+  } catch (error) {
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 }
@@ -112,4 +147,6 @@ module.exports = {
   exitOnEmailExists,
   exitOnEmailNotExists,
   userToTrip,
+  getTripIdFromEventId,
+  userToVote,
 };

@@ -33,7 +33,6 @@ async function getExpenses(req, res) {
 
     return res.status(200).json(expenseArray);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -89,7 +88,6 @@ async function createExpense(req, res) {
 
     return res.sendStatus(201);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -146,7 +144,6 @@ async function updateExpense(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -175,7 +172,6 @@ async function deleteExpense(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -222,7 +218,6 @@ async function getAverageExpense(req, res) {
 
     return res.status(200).json(averageMoney);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }

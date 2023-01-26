@@ -29,7 +29,6 @@ async function getInvites(req, res) {
 
     return res.status(200).json(pendingInviteArray);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -61,7 +60,6 @@ async function getSentInvites(req, res) {
 
     return res.status(200).json(sentInviteArray);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -104,7 +102,6 @@ async function createInvite(req, res) {
 
     return res.sendStatus(201);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -139,7 +136,6 @@ async function acceptInvite(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -173,7 +169,6 @@ async function rejectInvite(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -202,7 +197,6 @@ async function deleteInvite(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
