@@ -13,7 +13,7 @@ async function getVotes(req, res) {
     const { eventid } = req.params;
     const { tripid } = req.body;
 
-    if (!eventid) {
+    if (!eventid || !tripid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
@@ -70,20 +70,20 @@ async function getUserVote(req, res) {}
 async function createYesVote(req, res) {
   try {
     const { eventid } = req.params;
-    const { userid, tripsEventsid, vote  } = req.body;
+    const { userid } = req.body;
 
-    if (!eventid || !userid || !tripsEventsid) {
+    if (!eventid || !userid) {
       return res
         .status(500)
         .json({ message: 'required variable is undefined' });
     }
 
-    const votingArray = await knex ('users_events_vote')
-      .returning(['id', 'userid', 'trips_events_id', 'vote'])
+    const votingArray = await knex('users_events_vote')
+      .returning(['id'])
       .insert({
         user_id: userid,
-        trips_events_id: tripsEventsid,
-        vote: vote
+        trips_events_id: eventid,
+        vote: true,
       });
 
     if (!votingArray.length) {
@@ -95,17 +95,6 @@ async function createYesVote(req, res) {
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
-}
-
-/**
- * Respond to a PUT request to API_URL/timeline/update/eventid with info on how to
- * update the events
- * @param  {Request}  req Request object
- * @param  {Response} res Response object
- * @returns {Response} returns an http response containing the updated expense object
- */
-
-async function updateEvent(req, res) {
 }
 
 /**

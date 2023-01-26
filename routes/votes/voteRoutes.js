@@ -11,7 +11,12 @@ const {
 router.use(authenticateToken);
 
 router.get('/:eventid', getTripIdFromEventId, userToTrip, voteCtrl.getVotes);
-router.get('/:eventid/user', voteCtrl.getUserVote);
+router.get(
+  '/:eventid/user',
+  getTripIdFromEventId,
+  userToTrip,
+  voteCtrl.getUserVote
+);
 router.post('/yes/:eventid', voteCtrl.createYesVote);
 router.post('/no/:eventid', voteCtrl.createNoVote);
 router.put('/yes/:voteid', voteCtrl.updateToYesVote);
