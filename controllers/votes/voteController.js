@@ -122,7 +122,35 @@ async function createYesVote(req, res) {
  * @returns {Response} returns an http 201 status
  */
 
-async function createNoVote(req, res) {}
+async function createNoVote(req, res) {
+  try {
+    const { eventid } = req.params;
+    const { userid } = req.body;
+
+    if (!eventid || !userid) {
+      return res
+        .status(500)
+        .json({ message: 'required variable is undefined' });
+    }
+
+    const votingArray = await knex('users_events_vote')
+      .returning(['id'])
+      .insert({
+        user_id: userid,
+        trips_events_id: eventid,
+        vote: false,
+      });
+
+    if (!votingArray.length) {
+      return res.status(500).json({ message: 'Internal Server Error' });
+    }
+
+    return res.sendStatus(201);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
 
 /**
  * Respond to a PUT request to API_URL/vote/yes/:voteid
@@ -193,18 +221,21 @@ async function deleteVote(req, res) {
   try {
     const { voteid } = req.params;
 
-    const numDeleted = await knex('users_events_vote')
-      .where({ id: voteid })
-      .del();
-
-    if (!numDeleted) {
-      return res.status(404).json({ message: 'Vote Not Found' });
+    if (!voteid) {
+      return res.status(500).json({ message: 'required info is not defined' });
     }
 
+    const data = await knex('users_events_vote')
+      .where({ id: voteid })
+      .del(['vote']);
+
+    if (!data.length) {
+      return res.status(404).json({ message: 'item not found' });
+    }
     return res.sendStatus(200);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 }
 
