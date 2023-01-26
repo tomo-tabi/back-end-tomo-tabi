@@ -25,9 +25,7 @@ app.use('/expense', expenseRoutes);
 app.use('/invite', inviteRoutes);
 app.use('/vote', voteRoutes);
 
-app.use('*', (req, res) => {
-  return res.sendStatus(400);
-});
+app.use('*', (req, res) => res.sendStatus(400));
 
 app.listen(port, '0.0.0.0', () => {
   // eslint-disable-next-line no-console

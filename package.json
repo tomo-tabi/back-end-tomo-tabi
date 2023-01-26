@@ -8,7 +8,9 @@
     "start": "npm run migrate && nodemon server.js",
     "create-migration": "npx knex --knexfile=./db/knexfile.js migrate:make",
     "migrate": "npx knex migrate:latest --knexfile ./db/knexfile.js",
-    "seed": "knex seed:run --knexfile ./db/knexfile.js"
+    "seed": "knex seed:run --knexfile ./db/knexfile.js",
+    "lint": "eslint '**/*.{js,jsx}'",
+    "lint-fix": "eslint '**/*.{js,jsx}' --fix"
   },
   "repository": {
     "type": "git",

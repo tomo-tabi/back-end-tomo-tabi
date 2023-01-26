@@ -21,7 +21,6 @@ function emailFormat(req, res, next) {
 
     next();
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
@@ -49,8 +48,7 @@ async function exitOnEmailExists(req, res, next) {
 
     next();
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 }
@@ -77,8 +75,7 @@ async function exitOnEmailNotExists(req, res, next) {
 
     next();
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 }
@@ -101,8 +98,7 @@ async function userToTrip(req, res, next) {
 
     next();
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.log(error);
+    console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 }

@@ -10,7 +10,9 @@ module.exports = {
     ecmaVersion: 'latest',
   },
   ignorePatterns: [
-    '/db',
+    '/db/data/migrations/*.js',
+    '/db/data/seeds/*.js',
+    '/node_modules/*',
     'README.md',
     '/docs',
     '/test',
@@ -23,5 +25,6 @@ module.exports = {
     'arrow-parens': 'off',
     'comma-dangle': 'off',
     'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
+    'no-console': ['error', { allow: ['error'] }],
   },
 };

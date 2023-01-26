@@ -23,7 +23,6 @@ function authenticateToken(req, res, next) {
     req.body.userid = userid;
     next();
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
     return res.status(401).json({ message: 'invalid or expired token' });
   }
