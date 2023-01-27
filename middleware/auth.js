@@ -18,7 +18,7 @@ function createToken(userid) {
 
 function authenticateToken(req, res, next) {
   try {
-    if (checkForUndefined(token)) {
+    if (checkForUndefined(req.headers.authorization)) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
     const token = req.headers.authorization.split(' ')[1];
