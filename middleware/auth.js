@@ -18,11 +18,10 @@ function createToken(userid) {
 
 function authenticateToken(req, res, next) {
   try {
-    const token = req.headers.authorization.split(' ')[1];
-
     if (checkForUndefined(token)) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
+    const token = req.headers.authorization.split(' ')[1];
     const { userid } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     req.body.userid = userid;
     next();
