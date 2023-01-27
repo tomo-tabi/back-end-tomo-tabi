@@ -21,7 +21,7 @@ function authenticateToken(req, res, next) {
     const token = req.headers.authorization.split(' ')[1];
 
     if (checkForUndefined(token)) {
-      res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
     const { userid } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     req.body.userid = userid;
