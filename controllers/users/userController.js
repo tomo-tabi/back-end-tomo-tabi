@@ -5,6 +5,7 @@ const {
   handleInternalServerError,
   checkForUndefined,
 } = require('../errors/errorController');
+const ERROR = require('../errors/errorConstants');
 
 const saltRounds = 10;
 

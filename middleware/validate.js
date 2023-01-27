@@ -1,5 +1,10 @@
 const knex = require('../db/knex');
 const { REGEX } = require('../utils/constants');
+const {
+  handleInternalServerError,
+  checkForUndefined,
+} = require('../controllers/errors/errorController');
+const ERROR = require('../controllers/errors/errorConstants');
 
 /**
  * checks req.body.email param for validity
@@ -13,6 +18,10 @@ function emailFormat(req, res, next) {
   try {
     const { email } = req.body;
 
+    if (checkForUndefined(email)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
     if (!email.match(REGEX.EMAIL)) {
       return res.status(400).json({ message: 'Invalid email' });
     }
@@ -21,8 +30,7 @@ function emailFormat(req, res, next) {
 
     next();
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -35,9 +43,12 @@ function emailFormat(req, res, next) {
  */
 
 async function exitOnEmailExists(req, res, next) {
-  const { email } = req.body;
-
   try {
+    const { email } = req.body;
+
+    if (checkForUndefined(email)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
     const emailArray = await knex
       .select('email')
       .from('users')
@@ -48,8 +59,7 @@ async function exitOnEmailExists(req, res, next) {
 
     next();
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -62,9 +72,12 @@ async function exitOnEmailExists(req, res, next) {
  */
 
 async function exitOnEmailNotExists(req, res, next) {
-  const { email } = req.body;
-
   try {
+    const { email } = req.body;
+
+    if (checkForUndefined(email)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
     const emailArray = await knex
       .select('email')
       .from('users')
@@ -75,8 +88,7 @@ async function exitOnEmailNotExists(req, res, next) {
 
     next();
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -84,6 +96,10 @@ async function userToTrip(req, res, next) {
   try {
     const { userid } = req.body;
     const { tripid } = req.body.tripid ? req.body : req.params;
+
+    if (checkForUndefined(userid, tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
 
     const userToTripArray = await knex
       .select(null)
@@ -98,14 +114,17 @@ async function userToTrip(req, res, next) {
 
     next();
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
 async function getTripIdFromEventId(req, res, next) {
   try {
     const { eventid } = req.params;
+
+    if (checkForUndefined(eventid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
 
     const tripid = await knex('trips_events')
       .select('trip_id')
@@ -115,8 +134,7 @@ async function getTripIdFromEventId(req, res, next) {
 
     next();
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -124,6 +142,10 @@ async function userToVote(req, res, next) {
   try {
     const { userid } = req.body;
     const { voteid } = req.params;
+
+    if (checkForUndefined(userid, voteid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
 
     const valid = (
       await knex('users_events_vote')
@@ -137,8 +159,7 @@ async function userToVote(req, res, next) {
 
     next();
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
