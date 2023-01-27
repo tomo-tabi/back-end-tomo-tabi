@@ -1,5 +1,9 @@
 const knex = require('../../db/knex');
-const { handleInternalServerError } = require('../errors/errorController');
+const {
+  handleInternalServerError,
+  checkForUndefined,
+} = require('../errors/errorController');
+
 /**
  * Respond to a GET request to API_URL/timeline/:tripid with all events associated with the trip
  * @param  {Request}  req Request object
@@ -12,15 +16,10 @@ async function getEvents(req, res) {
     const { tripid } = req.params;
     const { userid } = req.body;
 
-    if (!userid || !tripid) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(userid, tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    /**
-     * @todo #112 getEvents also return num yes votes (maybe also num users in trip?)
-     */
     const eventArray = await knex
       .select('*')
       .from('trips_events')
@@ -48,10 +47,8 @@ async function createEvent(req, res) {
   try {
     const { userid, tripid, eventName, eventDate, description } = req.body;
 
-    if (!userid || !tripid || !eventName || !eventDate) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(userid, tripid, eventName, eventDate)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const eventArray = await knex('trips_events')
@@ -86,10 +83,8 @@ async function updateEvent(req, res) {
     const { eventid } = req.params;
     const { userid, tripid, eventName, eventDate, description } = req.body;
 
-    if (!userid || !tripid || !eventid || !eventName || !eventDate) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(userid, tripid, eventid, eventName, eventDate)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const eventArray = await knex('trips_events')
@@ -124,10 +119,8 @@ async function deleteEvent(req, res) {
     const { eventid } = req.params;
     const { userid, tripid } = req.body;
 
-    if (!userid || !tripid || !eventid) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(userid, tripid, eventid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const deleted = await knex('trips_events').where('id', eventid).del(['id']);

@@ -1,5 +1,9 @@
 const knex = require('../../db/knex');
-const { handleInternalServerError } = require('../errors/errorController');
+const {
+  handleInternalServerError,
+  checkForUndefined,
+} = require('../errors/errorController');
+const ERROR = require('../errors/errorConstants');
 
 /**
  * Respond to a GET request to API_URL/expense/:tripID with an array of expense objects
@@ -12,8 +16,8 @@ async function getExpenses(req, res) {
   try {
     const { tripid } = req.params;
 
-    if (!tripid) {
-      return res.status(500).json({ message: 'trip id is undefined' });
+    if (checkForUndefined(tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const expenseArray = await knex('expenses')
@@ -53,36 +57,21 @@ async function createExpense(req, res) {
 
     purchaserid = purchaserid || userid;
 
-    if (!purchaserid || !tripid || !itemName || !money) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(purchaserid, tripid, itemName, money)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const expenseArray = await knex.transaction(async trx => {
-      const id = await knex('expenses')
-        .insert(
-          {
-            user_id: purchaserid,
-            trip_id: tripid,
-            item_name: itemName,
-            money,
-          },
-          'id'
-        )
-        .transacting(trx);
+    const expenseIdArray = await knex('expenses').insert(
+      {
+        user_id: purchaserid,
+        trip_id: tripid,
+        item_name: itemName,
+        money,
+      },
+      'id'
+    );
 
-      const expenseJoinData = await knex
-        .select(['expenses.id', 'item_name', 'users.username', 'money'])
-        .from('expenses')
-        .join('users', 'user_id', 'users.id')
-        .where('expenses.id', id[0].id)
-        .transacting(trx);
-
-      return expenseJoinData;
-    });
-
-    if (!expenseArray.length) {
+    if (!expenseIdArray.length) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
@@ -108,36 +97,20 @@ async function updateExpense(req, res) {
 
     purchaserid = purchaserid || userid;
 
-    if (!purchaserid || !itemName || !money || !expenseid) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(purchaserid, itemName, money, expenseid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const expenseArray = await knex.transaction(async trx => {
-      const id = await knex('expenses')
-        .where('id', expenseid)
-        .update(
-          {
-            item_name: itemName,
-            user_id: purchaserid,
-            money,
-          },
-          ['id']
-        )
-        .transacting(trx);
+    const expenseIdArray = await knex('expenses').where('id', expenseid).update(
+      {
+        item_name: itemName,
+        user_id: purchaserid,
+        money,
+      },
+      ['id']
+    );
 
-      const expenseJoinData = await knex
-        .select(['expenses.id', 'item_name', 'users.username', 'money'])
-        .from('expenses')
-        .join('users', 'user_id', 'users.id')
-        .where('expenses.id', id[0].id)
-        .transacting(trx);
-
-      return expenseJoinData;
-    });
-
-    if (!expenseArray.length) {
+    if (!expenseIdArray.length) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
@@ -158,8 +131,8 @@ async function deleteExpense(req, res) {
   try {
     const { expenseid } = req.params;
 
-    if (!expenseid) {
-      return res.status(500).json({ message: 'undefined variable' });
+    if (checkForUndefined(expenseid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const deleted = await knex('expenses').where({ id: expenseid }).del();
@@ -176,6 +149,7 @@ async function deleteExpense(req, res) {
 
 /**
  * Respond to a GET request to API_URL/expense/average/:tripid with status code 200
+ * @deprecated
  * @todo make this reflect the newer front end logic
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
@@ -186,8 +160,8 @@ async function getAverageExpense(req, res) {
   try {
     const { tripid } = req.params;
 
-    if (!tripid) {
-      return res.status(500).json({ message: 'trip id is undefined' });
+    if (checkForUndefined(tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const expenseArray = await knex('expenses')

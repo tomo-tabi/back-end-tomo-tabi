@@ -1,5 +1,8 @@
 const knex = require('../../db/knex');
-const { handleInternalServerError } = require('../errors/errorController');
+const {
+  handleInternalServerError,
+  checkForUndefined,
+} = require('../errors/errorController');
 
 /**
  * Respond to a GET request to API_URL/trip/
@@ -13,8 +16,8 @@ async function getTrips(req, res) {
   try {
     const { userid } = req.body;
 
-    if (!userid) {
-      return res.status(500).json({ message: 'user id is not defined' });
+    if (checkForUndefined(userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const tripArray = await knex
@@ -39,8 +42,8 @@ async function getTripUsers(req, res) {
     const { tripid } = req.params;
     const { userid } = req.body;
 
-    if (!tripid || !userid) {
-      return res.status(500).json({ message: 'user id is not defined' });
+    if (checkForUndefined(tripid, userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const usersInTrip = await knex('users_trips')
@@ -69,8 +72,8 @@ async function createTrip(req, res) {
   try {
     const { startDate, endDate, userid, name } = req.body;
 
-    if (!userid || !startDate || !endDate || !name) {
-      return res.status(500).json({ message: 'required info is not defined' });
+    if (checkForUndefined(userid, startDate, endDate, name)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const tripArray = await knex.transaction(async trx => {
@@ -80,7 +83,7 @@ async function createTrip(req, res) {
           end_date: endDate,
           name,
         })
-        .returning('*')
+        .returning('id')
         .transacting(trx);
 
       await knex('users_trips')
@@ -113,8 +116,8 @@ async function updateTrip(req, res) {
     const { tripid } = req.params;
     const { startDate, endDate, name } = req.body;
 
-    if (!tripid || !startDate || !endDate || !name) {
-      return res.status(500).json({ message: 'required info is not defined' });
+    if (checkForUndefined(tripid, startDate, endDate, name)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const tripArray = await knex('trips')
@@ -148,8 +151,8 @@ async function deleteTrip(req, res) {
     const { tripid } = req.params;
     const { userid } = req.body;
 
-    if (!tripid || !userid) {
-      return res.status(500).json({ message: 'required info is not defined' });
+    if (checkForUndefined(tripid, userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const data = await knex('users_trips')

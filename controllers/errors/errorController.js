@@ -5,6 +5,11 @@ function handleInternalServerError(error, res) {
   return res.send(500).json(INTERNAL_SERVER_ERROR);
 }
 
+function checkForUndefined() {
+  return [...arguments].includes(undefined);
+}
+
 module.exports = {
   handleInternalServerError,
+  checkForUndefined,
 };
