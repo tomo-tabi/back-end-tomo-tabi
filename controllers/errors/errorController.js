@@ -2,7 +2,7 @@ const { INTERNAL_SERVER_ERROR } = require('./errorConstants');
 
 function handleInternalServerError(error, res) {
   console.error(error);
-  return res.send(500).json(INTERNAL_SERVER_ERROR);
+  return res.status(500).json(INTERNAL_SERVER_ERROR);
 }
 
 function checkForUndefined() {
