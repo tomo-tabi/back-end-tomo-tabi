@@ -24,8 +24,6 @@ async function getVotes(req, res) {
       .where('trips_events_id', eventid)
       .select(['username', 'vote']);
 
-    console.log(voteArray);
-
     const numUsersInTrip = (
       await knex('users_trips').where('trip_id', tripid).count()
     )[0].count;
