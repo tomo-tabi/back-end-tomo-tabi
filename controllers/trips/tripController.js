@@ -3,6 +3,7 @@ const {
   handleInternalServerError,
   checkForUndefined,
 } = require('../errors/errorController');
+const ERROR = require('../errors/errorConstants');
 
 /**
  * Respond to a GET request to API_URL/trip/
