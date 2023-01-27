@@ -1,4 +1,8 @@
 const knex = require('../../db/knex');
+const {
+  handleInternalServerError,
+  checkForUndefined,
+} = require('../errors/errorController');
 
 /**
  * Respond to a GET request to API_URL/vote/:eventid
@@ -13,27 +17,22 @@ async function getVotes(req, res) {
     const { eventid } = req.params;
     const { tripid } = req.body;
 
-    if (!eventid || !tripid) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(eventid, tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const voteArray = await knex('users_events_vote')
       .join('users', 'user_id', 'users.id')
+      .where('trips_events_id', eventid)
       .select(['username', 'vote']);
 
     const numUsersInTrip = (
       await knex('users_trips').where('trip_id', tripid).count()
     )[0].count;
 
-    const numYesVotes = voteArray.filter(object => {
-      return object.vote;
-    }).length;
+    const numYesVotes = voteArray.filter(object => object.vote).length;
 
-    const numNoVotes = voteArray.filter(object => {
-      return !object.vote;
-    }).length;
+    const numNoVotes = voteArray.filter(object => !object.vote).length;
 
     const numNotVoted = numUsersInTrip - numYesVotes - numNoVotes;
 
@@ -45,8 +44,7 @@ async function getVotes(req, res) {
       .status(200)
       .json({ voteArray, numYesVotes, numNoVotes, numNotVoted });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -63,6 +61,10 @@ async function getUserVote(req, res) {
     const { eventid } = req.params;
     const { userid } = req.body;
 
+    if (checkForUndefined(eventid, userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
     const userVoteArray = await knex('users_events_vote')
       .select(['id', 'vote'])
       .where({ trips_events_id: eventid, user_id: userid });
@@ -73,8 +75,7 @@ async function getUserVote(req, res) {
 
     return res.status(200).json(userVoteArray);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -90,13 +91,11 @@ async function createYesVote(req, res) {
     const { eventid } = req.params;
     const { userid } = req.body;
 
-    if (!eventid || !userid) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(eventid, userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const votingArray = await knex('users_events_vote')
+    const voteIdArray = await knex('users_events_vote')
       .returning(['id'])
       .insert({
         user_id: userid,
@@ -104,14 +103,13 @@ async function createYesVote(req, res) {
         vote: true,
       });
 
-    if (!votingArray.length) {
+    if (!voteIdArray.length) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
     return res.sendStatus(201);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -127,13 +125,11 @@ async function createNoVote(req, res) {
     const { eventid } = req.params;
     const { userid } = req.body;
 
-    if (!eventid || !userid) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(eventid, userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const votingArray = await knex('users_events_vote')
+    const voteIdArray = await knex('users_events_vote')
       .returning(['id'])
       .insert({
         user_id: userid,
@@ -141,14 +137,13 @@ async function createNoVote(req, res) {
         vote: false,
       });
 
-    if (!votingArray.length) {
+    if (!voteIdArray.length) {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
 
     return res.sendStatus(201);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -163,6 +158,10 @@ async function updateToYesVote(req, res) {
   try {
     const { voteid } = req.params;
 
+    if (checkForUndefined(voteid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
     const updatedVoteArray = await knex('users_events_vote')
       .returning(['id'])
       .where({ id: voteid })
@@ -176,8 +175,7 @@ async function updateToYesVote(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -192,6 +190,10 @@ async function updateToNoVote(req, res) {
   try {
     const { voteid } = req.params;
 
+    if (checkForUndefined(voteid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
     const updatedVoteArray = await knex('users_events_vote')
       .returning(['id'])
       .where({ id: voteid })
@@ -205,8 +207,7 @@ async function updateToNoVote(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -221,8 +222,8 @@ async function deleteVote(req, res) {
   try {
     const { voteid } = req.params;
 
-    if (!voteid) {
-      return res.status(500).json({ message: 'required info is not defined' });
+    if (checkForUndefined(voteid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const data = await knex('users_events_vote')
@@ -234,8 +235,7 @@ async function deleteVote(req, res) {
     }
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return handleInternalServerError(error, res);
   }
 }
 

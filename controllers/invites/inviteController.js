@@ -3,6 +3,11 @@ const knex = require('../../db/knex');
 const [ACCEPTED, REJECTED, PENDING] = ['accepted', 'rejected', 'pending'];
 const { getIdFromEmail } = require('../../utils/getID');
 const { inviteExists } = require('../../utils/exists');
+const {
+  handleInternalServerError,
+  checkForUndefined,
+} = require('../errors/errorController');
+const ERROR = require('../errors/errorConstants');
 
 /**
  * Respond to a GET request to API_URL/invite/
@@ -15,7 +20,9 @@ async function getInvites(req, res) {
   try {
     const { userid } = req.body;
 
-    if (!userid) return res.status(500).json('invalid token');
+    if (checkForUndefined(userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
 
     const pendingInviteArray = await knex('invites')
       .join('users', 'sender_id', 'users.id')
@@ -29,8 +36,7 @@ async function getInvites(req, res) {
 
     return res.status(200).json(pendingInviteArray);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -47,7 +53,9 @@ async function getSentInvites(req, res) {
     const { userid } = req.body;
     const { tripid } = req.params;
 
-    if (!userid || !tripid) return res.status(500).json('invalid token');
+    if (checkForUndefined(userid, tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
 
     const sentInviteArray = await knex('invites')
       .join('users', 'receiver_id', 'users.id')
@@ -60,8 +68,7 @@ async function getSentInvites(req, res) {
 
     return res.status(200).json(sentInviteArray);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -78,8 +85,8 @@ async function createInvite(req, res) {
 
     const receiverid = await getIdFromEmail(email);
 
-    if (!userid || !receiverid || !tripid) {
-      return res.status(500).json('required variable is undefined');
+    if (checkForUndefined(userid, receiverid, tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     if (await inviteExists(userid, receiverid, tripid)) {
@@ -102,8 +109,7 @@ async function createInvite(req, res) {
 
     return res.sendStatus(201);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -119,8 +125,8 @@ async function acceptInvite(req, res) {
     const { inviteid } = req.params;
     const { userid } = req.body;
 
-    if (!inviteid || !userid) {
-      return res.status(500).json('required variable is undefined');
+    if (checkForUndefined(inviteid, userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     await knex.transaction(async trx => {
@@ -136,8 +142,7 @@ async function acceptInvite(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -153,10 +158,8 @@ async function rejectInvite(req, res) {
     const { inviteid } = req.params;
     const { userid } = req.body;
 
-    if (!inviteid || !userid) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(inviteid, userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const inviteIdArray = await knex('invites')
@@ -169,8 +172,7 @@ async function rejectInvite(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -185,10 +187,8 @@ async function deleteInvite(req, res) {
   try {
     const { inviteid } = req.params;
 
-    if (!inviteid) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(inviteid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const deleted = await knex('invites').where({ id: inviteid }).del();
@@ -197,8 +197,7 @@ async function deleteInvite(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 

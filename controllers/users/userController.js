@@ -1,6 +1,10 @@
 const bcrypt = require('bcrypt');
 const knex = require('../../db/knex');
 const auth = require('../../middleware/auth');
+const {
+  handleInternalServerError,
+  checkForUndefined,
+} = require('../errors/errorController');
 
 const saltRounds = 10;
 
@@ -16,10 +20,8 @@ async function getUser(req, res) {
   try {
     const { userid } = req.body;
 
-    if (!userid) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const userArray = await knex('users')
@@ -49,19 +51,26 @@ async function login(req, res) {
   try {
     const { email, password } = req.body;
 
-    if (!password) {
-      return res.status(500).json({ message: 'password is undefined' });
+    if (checkForUndefined(password)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const userArray = await knex.select('*').from('users').where({ email });
+    const userArray = await knex
+      .select(['username', 'email', 'password'])
+      .from('users')
+      .where({ email });
 
     if (!userArray.length) {
       return res.status(404).json({ message: 'email not found' });
     }
 
-    const valid = await bcrypt.compare(password, userArray[0].password);
+    const isValidPassword = await bcrypt.compare(
+      password,
+      userArray[0].password
+    );
 
-    if (!valid) return res.status(401).json({ message: 'incorrect password' });
+    if (!isValidPassword)
+      return res.status(401).json({ message: 'incorrect password' });
 
     const token = auth.createToken(userArray[0].id);
 
@@ -72,8 +81,7 @@ async function login(req, res) {
 
     return res.status(200).json(loginObject);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -89,10 +97,8 @@ async function signup(req, res) {
   try {
     const { email, password, username } = req.body;
 
-    if (!password || !username) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(password, username)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const hash = await bcrypt.hash(password, saltRounds);
@@ -112,8 +118,7 @@ async function signup(req, res) {
 
     return res.status(201).json(loginObject);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -128,10 +133,8 @@ async function putUser(req, res) {
   try {
     const { userid, email, username } = req.body;
 
-    if (!userid || !username) {
-      return res
-        .status(500)
-        .json({ message: 'required variable is undefined' });
+    if (checkForUndefined(userid, username)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const userArray = await knex('users')
@@ -148,8 +151,7 @@ async function putUser(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    return handleInternalServerError(error, res);
   }
 }
 
