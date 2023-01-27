@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const knex = require('../../db/knex');
 const auth = require('../../middleware/auth');
+const { handleInternalServerError } = require('../errors/errorController');
 
 const saltRounds = 10;
 
@@ -72,8 +73,7 @@ async function login(req, res) {
 
     return res.status(200).json(loginObject);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    handleInternalServerError(error, res);
   }
 }
 
@@ -112,8 +112,7 @@ async function signup(req, res) {
 
     return res.status(201).json(loginObject);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    handleInternalServerError(error, res);
   }
 }
 
@@ -148,8 +147,7 @@ async function putUser(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    handleInternalServerError(error, res);
   }
 }
 

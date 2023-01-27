@@ -1,4 +1,5 @@
 const knex = require('../../db/knex');
+const { handleInternalServerError } = require('../errors/errorController');
 
 /**
  * Respond to a GET request to API_URL/trip/
@@ -29,8 +30,7 @@ async function getTrips(req, res) {
 
     return res.status(200).json(tripArray);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    handleInternalServerError(error, res);
   }
 }
 
@@ -54,8 +54,7 @@ async function getTripUsers(req, res) {
 
     return res.status(200).json(usersInTrip);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    handleInternalServerError(error, res);
   }
 }
 
@@ -98,8 +97,7 @@ async function createTrip(req, res) {
 
     return res.sendStatus(201);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    handleInternalServerError(error, res);
   }
 }
 
@@ -134,8 +132,7 @@ async function updateTrip(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    handleInternalServerError(error, res);
   }
 }
 
@@ -165,8 +162,7 @@ async function deleteTrip(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    handleInternalServerError(error, res);
   }
 }
 

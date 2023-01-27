@@ -1,4 +1,5 @@
 const knex = require('../../db/knex');
+const { handleInternalServerError } = require('../errors/errorController');
 
 /**
  * Respond to a GET request to API_URL/vote/:eventid
@@ -41,8 +42,7 @@ async function getVotes(req, res) {
       .status(200)
       .json({ voteArray, numYesVotes, numNoVotes, numNotVoted });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    handleInternalServerError(error, res);
   }
 }
 
@@ -69,8 +69,7 @@ async function getUserVote(req, res) {
 
     return res.status(200).json(userVoteArray);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    handleInternalServerError(error, res);
   }
 }
 
@@ -106,8 +105,7 @@ async function createYesVote(req, res) {
 
     return res.sendStatus(201);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    handleInternalServerError(error, res);
   }
 }
 
@@ -143,8 +141,7 @@ async function createNoVote(req, res) {
 
     return res.sendStatus(201);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    handleInternalServerError(error, res);
   }
 }
 
@@ -172,8 +169,7 @@ async function updateToYesVote(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    handleInternalServerError(error, res);
   }
 }
 
@@ -201,8 +197,7 @@ async function updateToNoVote(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    handleInternalServerError(error, res);
   }
 }
 
@@ -230,8 +225,7 @@ async function deleteVote(req, res) {
     }
     return res.sendStatus(200);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    handleInternalServerError(error, res);
   }
 }
 
