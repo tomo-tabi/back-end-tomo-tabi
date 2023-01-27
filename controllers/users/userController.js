@@ -57,7 +57,7 @@ async function login(req, res) {
     }
 
     const userArray = await knex
-      .select(['username', 'email', 'password'])
+      .select(['id', 'username', 'email', 'password'])
       .from('users')
       .where({ email });
 
