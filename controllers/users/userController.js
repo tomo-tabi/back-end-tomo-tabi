@@ -73,7 +73,7 @@ async function login(req, res) {
 
     return res.status(200).json(loginObject);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -112,7 +112,7 @@ async function signup(req, res) {
 
     return res.status(201).json(loginObject);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -147,7 +147,7 @@ async function putUser(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 

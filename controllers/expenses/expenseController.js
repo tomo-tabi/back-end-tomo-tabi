@@ -34,7 +34,7 @@ async function getExpenses(req, res) {
 
     return res.status(200).json(expenseArray);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -88,7 +88,7 @@ async function createExpense(req, res) {
 
     return res.sendStatus(201);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -143,7 +143,7 @@ async function updateExpense(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -170,7 +170,7 @@ async function deleteExpense(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -215,7 +215,7 @@ async function getAverageExpense(req, res) {
 
     return res.status(200).json(averageMoney);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 

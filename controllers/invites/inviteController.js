@@ -30,7 +30,7 @@ async function getInvites(req, res) {
 
     return res.status(200).json(pendingInviteArray);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -60,7 +60,7 @@ async function getSentInvites(req, res) {
 
     return res.status(200).json(sentInviteArray);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -101,7 +101,7 @@ async function createInvite(req, res) {
 
     return res.sendStatus(201);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -134,7 +134,7 @@ async function acceptInvite(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -166,7 +166,7 @@ async function rejectInvite(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -193,7 +193,7 @@ async function deleteInvite(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 

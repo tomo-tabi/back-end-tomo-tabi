@@ -33,7 +33,7 @@ async function getEvents(req, res) {
 
     return res.status(200).json(eventArray);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -69,7 +69,7 @@ async function createEvent(req, res) {
 
     return res.sendStatus(201);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -107,7 +107,7 @@ async function updateEvent(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -138,7 +138,7 @@ async function deleteEvent(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 

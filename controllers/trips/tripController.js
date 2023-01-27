@@ -30,7 +30,7 @@ async function getTrips(req, res) {
 
     return res.status(200).json(tripArray);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -54,7 +54,7 @@ async function getTripUsers(req, res) {
 
     return res.status(200).json(usersInTrip);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -97,7 +97,7 @@ async function createTrip(req, res) {
 
     return res.sendStatus(201);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -132,7 +132,7 @@ async function updateTrip(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
@@ -162,7 +162,7 @@ async function deleteTrip(req, res) {
 
     return res.sendStatus(200);
   } catch (error) {
-    handleInternalServerError(error, res);
+    return handleInternalServerError(error, res);
   }
 }
 
