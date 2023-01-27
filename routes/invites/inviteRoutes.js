@@ -6,8 +6,8 @@ const { authenticateToken } = require('../../middleware/auth');
 const {
   emailFormat,
   exitOnEmailNotExists,
+  userToTrip,
 } = require('../../middleware/validate');
-const { userToTrip } = require('../../middleware/validate');
 
 router.use(authenticateToken);
 
