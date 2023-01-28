@@ -78,6 +78,7 @@ async function login(req, res) {
     const loginObject = {
       token,
       username: userArray[0].username,
+      email: userArray[0].email,
     };
 
     return res.status(200).json(loginObject);
@@ -115,6 +116,7 @@ async function signup(req, res) {
     const loginObject = {
       token,
       username: userArray[0].username,
+      email: userArray[0].email,
     };
 
     return res.status(201).json(loginObject);
