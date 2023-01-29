@@ -45,19 +45,24 @@ function emailFormat(req, res, next) {
 async function exitOnEmailExists(req, res, next) {
   try {
     const { email } = req.body;
+    const userid = req.body.userid ? req.body.userid : null;
 
     if (checkForUndefined(email)) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
-    const emailArray = await knex
-      .select('email')
-      .from('users')
-      .where('email', email);
-    if (emailArray.length) {
-      return res.status(409).json({ message: 'email already exists' });
+
+    const emailUserId = (
+      await knex.select('id').from('users').where('email', email)
+    )[0].id;
+
+    if (emailUserId === userid) {
+      return next();
     }
 
-    next();
+    if (emailUserId) {
+      return res.status(409).json({ message: 'email already exists' });
+    }
+    return next();
   } catch (error) {
     return handleInternalServerError(error, res);
   }
