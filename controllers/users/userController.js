@@ -168,12 +168,56 @@ async function putUser(req, res) {
 
 // eslint-disable-next-line no-unused-vars
 async function putPassword(req, res) {
-  // possible steps
-  // user must submit existing password to change it.
-  // {password, newPassword, userid}
-  // check if password is correct with bcrypt
-  // if correct, hash the newPassword with bcrypt and update the user
-  // send back new jwt containing userid
+  try {
+    const { OldPassword, password, userid, email } = req.body;
+
+    if (checkForUndefined(password, OldPassword, email)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
+    const userArray = await knex
+      .select(['id', 'username', 'email', 'password'])
+      .from('users')
+      .where({ email });
+
+    if (!userArray.length) {
+      return res.status(404).json({ message: 'email not found' });
+    }
+
+    const isValidPassword = await bcrypt.compare(
+      OldPassword,
+      userArray[0].password
+    );
+
+    if (!isValidPassword) {
+      return res.status(401).json({ message: 'incorrect old password' })
+    }
+
+    const hashNewPassword = await bcrypt.hash(password, saltRounds);
+
+    const NewUserArray = await knex('users')
+      .returning(['id', 'username'])
+      .where({ id: userid })
+      .update({
+        password: hashNewPassword
+      });
+
+    if (!NewUserArray.length) {
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+
+    const token = auth.createToken(userArray[0].id);
+
+    const userObject = {
+      token,
+      username: userArray[0].username,
+      email: userArray[0].email,
+    };
+
+    return res.status(200).json(userObject);
+  } catch (error) {
+    return handleInternalServerError(error, res);
+  }
 }
 
 /**
