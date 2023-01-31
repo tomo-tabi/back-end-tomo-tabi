@@ -83,6 +83,7 @@ async function createTrip(req, res) {
           start_date: startDate,
           end_date: endDate,
           name,
+          owner_id: userid,
         })
         .returning('id')
         .transacting(trx);

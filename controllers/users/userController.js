@@ -105,11 +105,13 @@ async function signup(req, res) {
 
     const hash = await bcrypt.hash(password, saltRounds);
 
-    const userArray = await knex('users').returning(['id', 'username']).insert({
-      email,
-      password: hash,
-      username,
-    });
+    const userArray = await knex('users')
+      .returning(['id', 'username', 'email'])
+      .insert({
+        email,
+        password: hash,
+        username,
+      });
 
     const token = auth.createToken(userArray[0].id);
 

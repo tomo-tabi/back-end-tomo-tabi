@@ -51,18 +51,22 @@ async function exitOnEmailExists(req, res, next) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const emailUserId = (
-      await knex.select('id').from('users').where('email', email)
-    )[0].id;
+    const emailUserArray = await knex
+      .select('id')
+      .from('users')
+      .where('email', email);
+
+    if (!emailUserArray.length) {
+      return next();
+    }
+
+    const emailUserId = emailUserArray[0].id;
 
     if (emailUserId === userid) {
       return next();
     }
 
-    if (emailUserId) {
-      return res.status(409).json({ message: 'email already exists' });
-    }
-    return next();
+    return res.status(409).json({ message: 'email already exists' });
   } catch (error) {
     return handleInternalServerError(error, res);
   }
