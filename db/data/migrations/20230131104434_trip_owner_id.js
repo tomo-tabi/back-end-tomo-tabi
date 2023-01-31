@@ -4,7 +4,7 @@
  */
 exports.up = function (knex) {
   return knex.schema.alterTable('trips', table => {
-    table.integer('owner_id').notNullable();
+    table.integer('owner_id');
     table.foreign('owner_id').references('users.id');
   });
 };
