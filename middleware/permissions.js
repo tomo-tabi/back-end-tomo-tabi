@@ -15,17 +15,17 @@ async function exitOnLocked(req, res, next) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const tripObject = (
+    const { owner_id, is_locked } = (
       await knex('trips')
         .where({ id: tripid })
         .select(['is_locked', 'owner_id'])
     )[0];
 
-    if (tripObject.owner_id === userid) {
+    if (owner_id === userid) {
       return next();
     }
 
-    if (!tripObject.is_locked) {
+    if (!is_locked) {
       return next();
     }
 
@@ -36,6 +36,31 @@ async function exitOnLocked(req, res, next) {
   }
 }
 
+async function isOwner(req, res, next) {
+  try {
+    const { userid } = req.body;
+    const { tripid } = req.body.tripid ? req.body : req.params;
+
+    if (checkForUndefined(userid, tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
+    const { owner_id } = (
+      await knex('trips').where({ id: tripid }).select(['owner_id'])
+    )[0];
+
+    if (owner_id === userid) {
+      return next();
+    }
+
+    return res.status(403).json({ message: 'not authorized' });
+  } catch (error) {
+    console.error(error);
+    handleInternalServerError(error, res);
+  }
+}
+
 module.exports = {
   exitOnLocked,
+  isOwner,
 };
