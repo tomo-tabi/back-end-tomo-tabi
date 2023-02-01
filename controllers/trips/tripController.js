@@ -151,15 +151,43 @@ async function updateTrip(req, res) {
 async function deleteTrip(req, res) {
   try {
     const { tripid } = req.params;
+
+    if (checkForUndefined(tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
+    const data = await knex('users_trips')
+      .where({ trip_id: tripid })
+      .del(['id']);
+
+    if (!data.length) {
+      return res.status(404).json({ message: 'item not found' });
+    }
+
+    return res.sendStatus(200);
+  } catch (error) {
+    return handleInternalServerError(error, res);
+  }
+}
+
+/**
+ * Respond to a DELETE request to API_URL/trip/:tripid/lock by removing
+ * the users_trips join table item connecting them.
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} response status 200
+ */
+
+async function lockTrip(req, res) {
+  try {
+    const { tripid } = req.params;
     const { userid } = req.body;
 
     if (checkForUndefined(tripid, userid)) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const data = await knex('users_trips')
-      .where({ trip_id: tripid, user_id: userid })
-      .del(['id']);
+    const data = await knex('trips').where({ trip_id: tripid }).del(['id']);
 
     if (!data.length) {
       return res.status(404).json({ message: 'item not found' });
@@ -177,4 +205,5 @@ module.exports = {
   createTrip,
   updateTrip,
   deleteTrip,
+  lockTrip,
 };
