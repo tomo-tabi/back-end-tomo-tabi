@@ -50,6 +50,49 @@ async function getVotes(req, res) {
 }
 
 /**
+ * Respond to a GET request to API_URL/tripVotes/:eventid
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} returns an array of vote table objects containing
+ * { [ { tripid } ], numOfYesVotes, numOfNoVotes, numNotVoted }
+ */
+
+async function getTripVotes(req, res) {
+  try {
+    const { eventid } = req.params;
+    const { tripid } = req.body;
+
+    if (checkForUndefined(eventid, tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
+    const tripVoteArray = await knex('users_events_vote')
+      .select(['id', 'vote', trips_events_id])
+      .where({ trips_id: tripid });
+
+    const numUsersInTrip = (
+      await knex('users_trips').where('trip_id', tripid).count()
+    )[0].count;
+
+    const numYesVotes = voteArray.filter(object => object.vote).length;
+
+    const numNoVotes = voteArray.filter(object => !object.vote).length;
+
+    const numNotVoted = numUsersInTrip - numYesVotes - numNoVotes;
+
+    if (!tripVoteArray.length) {
+      return res.status(404).json({ message: 'No Votes' });
+    }
+
+    return res
+      .status(200)
+      .json({ tripVoteArray, numYesVotes, numNoVotes, numNotVoted });
+  } catch (error) {
+    return handleInternalServerError(error, res);
+  }
+}
+
+/**
  * Respond to a GET request to API_URL/vote/:eventid/user
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
@@ -243,6 +286,7 @@ async function deleteVote(req, res) {
 module.exports = {
   getVotes,
   getUserVote,
+  getTripVotes,
   createYesVote,
   createNoVote,
   updateToYesVote,
