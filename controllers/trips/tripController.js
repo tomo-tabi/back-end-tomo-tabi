@@ -151,13 +151,14 @@ async function updateTrip(req, res) {
 async function deleteTrip(req, res) {
   try {
     const { tripid } = req.params;
+    const { userid } = req.body;
 
-    if (checkForUndefined(tripid)) {
+    if (checkForUndefined(tripid, userid)) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const data = await knex('users_trips')
-      .where({ trip_id: tripid })
+      .where({ trip_id: tripid, user_id: userid })
       .del(['id']);
 
     if (!data.length) {
@@ -187,9 +188,13 @@ async function lockTrip(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const data = await knex('trips').where({ trip_id: tripid }).del(['id']);
+    const lockedid = (
+      await knex('trips')
+        .where({ id: tripid })
+        .update({ is_locked: true }, ['id'])
+    )[0].id;
 
-    if (!data.length) {
+    if (!lockedid) {
       return res.status(404).json({ message: 'item not found' });
     }
 
