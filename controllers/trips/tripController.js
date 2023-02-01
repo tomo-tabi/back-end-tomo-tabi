@@ -172,8 +172,7 @@ async function deleteTripFromUser(req, res) {
 }
 
 /**
- * Respond to a DELETE request to API_URL/trip/:tripid/lock by removing
- * the users_trips join table item connecting them.
+ * Respond to a PUT request to API_URL/trip/:tripid/lock
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
  * @returns {Response} response status 200
@@ -204,6 +203,13 @@ async function lockTrip(req, res) {
   }
 }
 
+/**
+ * Respond to a PUT request to API_URL/trip/:tripid/unlock
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} response status 200
+ */
+
 async function unlockTrip(req, res) {
   try {
     const { tripid } = req.params;
@@ -229,6 +235,43 @@ async function unlockTrip(req, res) {
   }
 }
 
+/**
+ * Respond to a GET request to API_URL/trip/:tripid/locked
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} response status 200
+ */
+
+async function getIsLockedForUser(req, res) {
+  try {
+    const { userid } = req.body;
+    const { tripid } = req.body.tripid ? req.body : req.params;
+
+    if (checkForUndefined(userid, tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
+    const { owner_id, is_locked } = (
+      await knex('trips')
+        .where({ id: tripid })
+        .select(['owner_id', 'is_locked'])
+    )[0];
+
+    if (owner_id === userid) {
+      return res.status(200).json(false);
+    }
+
+    if (!is_locked) {
+      return res.status(200).json(false);
+    }
+
+    return res.status(200).json(true);
+  } catch (error) {
+    console.error(error);
+    handleInternalServerError(error, res);
+  }
+}
+
 module.exports = {
   getTrips,
   getTripUsers,
@@ -237,4 +280,5 @@ module.exports = {
   deleteTripFromUser,
   lockTrip,
   unlockTrip,
+  getIsLockedForUser,
 };
