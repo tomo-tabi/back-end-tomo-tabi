@@ -67,23 +67,25 @@ async function getTripVotes(req, res) {
     }
 
     const tripVoteArray = await knex('users_events_vote')
-      .select(['id', 'vote', trips_events_id])
-      .where({ trips_id: tripid });
+      .join('trips_events', 'trips_events_id', 'trips_events.id')
+      .where('trips_events_id', eventid)
+      .select(['users_events_vote.id', 'vote', 'trips_events_id'])
+      .where({ 'trips_events.trip_id': tripid });
 
     const numUsersInTrip = (
       await knex('users_trips').where('trip_id', tripid).count()
     )[0].count;
 
-    const numYesVotes = voteArray.filter(object => object.vote).length;
+    const numYesVotes = tripVoteArray.filter(object => object.vote).length;
 
-    const numNoVotes = voteArray.filter(object => !object.vote).length;
+    const numNoVotes = tripVoteArray.filter(object => !object.vote).length;
 
     const numNotVoted = numUsersInTrip - numYesVotes - numNoVotes;
 
     if (!tripVoteArray.length) {
       return res.status(404).json({ message: 'No Votes' });
     }
-
+// 
     return res
       .status(200)
       .json({ tripVoteArray, numYesVotes, numNoVotes, numNotVoted });
