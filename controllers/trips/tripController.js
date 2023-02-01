@@ -4,6 +4,7 @@ const {
   checkForUndefined,
 } = require('../errors/errorController');
 const ERROR = require('../errors/errorConstants');
+const [LOCKED, UNLOCKED] = [true, false];
 
 /**
  * Respond to a GET request to API_URL/trip/
@@ -190,7 +191,7 @@ async function lockTrip(req, res) {
     const lockedid = (
       await knex('trips')
         .where({ id: tripid })
-        .update({ is_locked: true }, ['id'])
+        .update({ is_locked: LOCKED }, ['id'])
     )[0].id;
 
     if (!lockedid) {
@@ -222,7 +223,7 @@ async function unlockTrip(req, res) {
     const lockedid = (
       await knex('trips')
         .where({ id: tripid })
-        .update({ is_locked: false }, ['id'])
+        .update({ is_locked: UNLOCKED }, ['id'])
     )[0].id;
 
     if (!lockedid) {
@@ -258,14 +259,14 @@ async function getIsLockedForUser(req, res) {
     )[0];
 
     if (owner_id === userid) {
-      return res.status(200).json(false);
+      return res.status(200).json(UNLOCKED);
     }
 
     if (!is_locked) {
-      return res.status(200).json(false);
+      return res.status(200).json(UNLOCKED);
     }
 
-    return res.status(200).json(true);
+    return res.status(200).json(LOCKED);
   } catch (error) {
     console.error(error);
     handleInternalServerError(error, res);
