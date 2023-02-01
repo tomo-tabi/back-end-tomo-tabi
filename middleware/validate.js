@@ -117,7 +117,7 @@ async function userToTrip(req, res, next) {
         .json({ message: 'user not authorized for this trip' });
     }
 
-    next();
+    return next();
   } catch (error) {
     return handleInternalServerError(error, res);
   }
