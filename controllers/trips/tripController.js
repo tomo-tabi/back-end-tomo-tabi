@@ -204,6 +204,31 @@ async function lockTrip(req, res) {
   }
 }
 
+async function unlockTrip(req, res) {
+  try {
+    const { tripid } = req.params;
+    const { userid } = req.body;
+
+    if (checkForUndefined(tripid, userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
+    const lockedid = (
+      await knex('trips')
+        .where({ id: tripid })
+        .update({ is_locked: false }, ['id'])
+    )[0].id;
+
+    if (!lockedid) {
+      return res.status(404).json({ message: 'item not found' });
+    }
+
+    return res.sendStatus(200);
+  } catch (error) {
+    return handleInternalServerError(error, res);
+  }
+}
+
 module.exports = {
   getTrips,
   getTripUsers,
@@ -211,4 +236,5 @@ module.exports = {
   updateTrip,
   deleteTripFromUser,
   lockTrip,
+  unlockTrip,
 };
