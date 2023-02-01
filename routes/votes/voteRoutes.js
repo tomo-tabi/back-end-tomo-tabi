@@ -18,6 +18,7 @@ router.get(
   userToTrip,
   voteCtrl.getUserVote
 );
+router.get('/tripVotes/:eventid', voteCtrl.getTripVotes);
 router.post('/yes/:eventid', voteCtrl.createYesVote);
 router.post('/no/:eventid', voteCtrl.createNoVote);
 router.put('/yes/:voteid', userToVote, voteCtrl.updateToYesVote);
