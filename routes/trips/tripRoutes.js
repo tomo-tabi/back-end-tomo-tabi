@@ -12,6 +12,6 @@ router.get('/users/:tripid', userToTrip, tripCtrl.getTripUsers);
 router.post('/', tripCtrl.createTrip);
 router.put('/:tripid', userToTrip, tripCtrl.updateTrip);
 router.put('/:tripid/lock', userToTrip, tripCtrl.lockTrip);
-router.delete('/:tripid', tripCtrl.deleteTrip);
+router.delete('/:tripid', tripCtrl.deleteTripFromUser);
 
 module.exports = router;

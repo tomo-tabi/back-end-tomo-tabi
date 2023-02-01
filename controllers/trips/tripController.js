@@ -148,7 +148,7 @@ async function updateTrip(req, res) {
  * @param  {Response} res Response object
  * @returns {Response} response status 200
  */
-async function deleteTrip(req, res) {
+async function deleteTripFromUser(req, res) {
   try {
     const { tripid } = req.params;
     const { userid } = req.body;
@@ -209,6 +209,6 @@ module.exports = {
   getTripUsers,
   createTrip,
   updateTrip,
-  deleteTrip,
+  deleteTripFromUser,
   lockTrip,
 };
