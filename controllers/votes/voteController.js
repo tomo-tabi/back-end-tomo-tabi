@@ -89,7 +89,9 @@ async function getTripVotes(req, res) {
       return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
     //
-    return res.status(200).json({ tripVoteArray, tripid });
+    return res
+      .status(200)
+      .json({ tripVoteArray, numYesVotes, numNoVotes, numNotVoted });
   } catch (error) {
     return handleInternalServerError(error, res);
   }
