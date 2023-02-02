@@ -272,6 +272,31 @@ async function getIsLockedForUser(req, res) {
   }
 }
 
+async function getUserIsOwner (req, res) {
+  try {
+    const { userid } = req.body;
+    const { tripid } = req.params;
+
+    if (checkForUndefined(userid, tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
+    const { owner_id } = (
+      await knex('trips').where({ id: tripid }).select(['owner_id'])
+    )[0];
+
+    if (owner_id === userid) {
+      return res.status(200).json(true);
+    }
+
+    return res.status(200).json(false);
+    
+  } catch (error) {
+    console.error(error);
+    handleInternalServerError(error, res);
+  }
+}
+
 module.exports = {
   getTrips,
   getTripUsers,
@@ -281,4 +306,5 @@ module.exports = {
   lockTrip,
   unlockTrip,
   getIsLockedForUser,
+  getUserIsOwner
 };
