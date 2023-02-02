@@ -83,6 +83,7 @@ async function createTrip(req, res) {
           start_date: startDate,
           end_date: endDate,
           name,
+          owner_id: userid,
         })
         .returning('id')
         .transacting(trx);
@@ -147,7 +148,7 @@ async function updateTrip(req, res) {
  * @param  {Response} res Response object
  * @returns {Response} response status 200
  */
-async function deleteTrip(req, res) {
+async function deleteTripFromUser(req, res) {
   try {
     const { tripid } = req.params;
     const { userid } = req.body;
@@ -170,10 +171,114 @@ async function deleteTrip(req, res) {
   }
 }
 
+/**
+ * Respond to a PUT request to API_URL/trip/:tripid/lock
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} response status 200
+ */
+
+async function lockTrip(req, res) {
+  try {
+    const { tripid } = req.params;
+    const { userid } = req.body;
+
+    if (checkForUndefined(tripid, userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
+    const lockedid = (
+      await knex('trips')
+        .where({ id: tripid })
+        .update({ is_locked: true }, ['id'])
+    )[0].id;
+
+    if (!lockedid) {
+      return res.status(404).json({ message: 'item not found' });
+    }
+
+    return res.sendStatus(200);
+  } catch (error) {
+    return handleInternalServerError(error, res);
+  }
+}
+
+/**
+ * Respond to a PUT request to API_URL/trip/:tripid/unlock
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} response status 200
+ */
+
+async function unlockTrip(req, res) {
+  try {
+    const { tripid } = req.params;
+    const { userid } = req.body;
+
+    if (checkForUndefined(tripid, userid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
+    const lockedid = (
+      await knex('trips')
+        .where({ id: tripid })
+        .update({ is_locked: false }, ['id'])
+    )[0].id;
+
+    if (!lockedid) {
+      return res.status(404).json({ message: 'item not found' });
+    }
+
+    return res.sendStatus(200);
+  } catch (error) {
+    return handleInternalServerError(error, res);
+  }
+}
+
+/**
+ * Respond to a GET request to API_URL/trip/:tripid/locked
+ * @param  {Request}  req Request object
+ * @param  {Response} res Response object
+ * @returns {Response} response status 200
+ */
+
+async function getIsLockedForUser(req, res) {
+  try {
+    const { userid } = req.body;
+    const { tripid } = req.body.tripid ? req.body : req.params;
+
+    if (checkForUndefined(userid, tripid)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
+    const { owner_id, is_locked } = (
+      await knex('trips')
+        .where({ id: tripid })
+        .select(['owner_id', 'is_locked'])
+    )[0];
+
+    if (owner_id === userid) {
+      return res.status(200).json(false);
+    }
+
+    if (!is_locked) {
+      return res.status(200).json(false);
+    }
+
+    return res.status(200).json(true);
+  } catch (error) {
+    console.error(error);
+    handleInternalServerError(error, res);
+  }
+}
+
 module.exports = {
   getTrips,
   getTripUsers,
   createTrip,
   updateTrip,
-  deleteTrip,
+  deleteTripFromUser,
+  lockTrip,
+  unlockTrip,
+  getIsLockedForUser,
 };
