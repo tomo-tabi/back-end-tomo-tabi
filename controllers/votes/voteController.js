@@ -38,7 +38,7 @@ async function getVotes(req, res) {
     const numNotVoted = numUsersInTrip - numYesVotes - numNoVotes;
 
     if (!voteArray.length) {
-      return res.status(404).json({ message: 'No Votes' });
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res
@@ -86,13 +86,10 @@ async function getTripVotes(req, res) {
     // const numNotVoted = numUsersInTrip - numYesVotes - numNoVotes;
 
     if (!tripVoteArray.length) {
-      return res.status(404).json({ message: 'No Votes' });
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
-// 
-    // console.log({tripVoteArray, tripid});
-    return res
-      .status(200)
-      .json({tripVoteArray, tripid});
+    //
+    return res.status(200).json({ tripVoteArray, tripid });
   } catch (error) {
     return handleInternalServerError(error, res);
   }
@@ -145,16 +142,17 @@ async function createYesVote(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const voteIdArray = await knex('users_events_vote')
-      .returning(['id'])
-      .insert({
+    const newVoteId = await knex('users_events_vote').insert(
+      {
         user_id: userid,
         trips_events_id: eventid,
         vote: true,
-      });
+      },
+      ['id']
+    )[0].id;
 
-    if (!voteIdArray.length) {
-      return res.status(500).json({ message: 'Internal Server Error' });
+    if (!newVoteId) {
+      return res.status(500).json(ERROR.INTERNAL_SERVER_ERROR);
     }
 
     return res.sendStatus(201);
@@ -179,16 +177,18 @@ async function createNoVote(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const voteIdArray = await knex('users_events_vote')
-      .returning(['id'])
-      .insert({
-        user_id: userid,
-        trips_events_id: eventid,
-        vote: false,
-      });
+    const newVoteId = (
+      await knex('users_events_vote').insert(
+        {
+          user_id: userid,
+          trips_events_id: eventid,
+          vote: false,
+        }['id']
+      )
+    )[0].id;
 
-    if (!voteIdArray.length) {
-      return res.status(500).json({ message: 'Internal Server Error' });
+    if (!newVoteId) {
+      return res.status(500).json(ERROR.INTERNAL_SERVER_ERROR);
     }
 
     return res.sendStatus(201);
@@ -212,15 +212,17 @@ async function updateToYesVote(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const updatedVoteArray = await knex('users_events_vote')
-      .returning(['id'])
-      .where({ id: voteid })
-      .update({
-        vote: true,
-      });
+    const updatedVoteId = (
+      await knex('users_events_vote').where({ id: voteid }).update(
+        {
+          vote: true,
+        },
+        ['id']
+      )
+    )[0].id;
 
-    if (!updatedVoteArray.length) {
-      return res.status(404).json({ message: 'Vote Not Found' });
+    if (!updatedVoteId) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.sendStatus(200);
@@ -244,15 +246,17 @@ async function updateToNoVote(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const updatedVoteArray = await knex('users_events_vote')
-      .returning(['id'])
-      .where({ id: voteid })
-      .update({
-        vote: false,
-      });
+    const updatedVoteId = (
+      await knex('users_events_vote').where({ id: voteid }).update(
+        {
+          vote: false,
+        },
+        ['id']
+      )
+    )[0].id;
 
-    if (!updatedVoteArray.length) {
-      return res.status(404).json({ message: 'Vote Not Found' });
+    if (!updatedVoteId) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.sendStatus(200);
@@ -276,12 +280,12 @@ async function deleteVote(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const data = await knex('users_events_vote')
+    const numDeleted = await knex('users_events_vote')
       .where({ id: voteid })
-      .del(['vote']);
+      .del();
 
-    if (!data.length) {
-      return res.status(404).json({ message: 'item not found' });
+    if (!numDeleted) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
     return res.sendStatus(200);
   } catch (error) {

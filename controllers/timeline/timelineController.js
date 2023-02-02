@@ -28,7 +28,7 @@ async function getEvents(req, res) {
       .orderBy('event_date', 'asc');
 
     if (!eventArray.length) {
-      return res.status(404).json({ message: 'item not found' });
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.status(200).json(eventArray);
@@ -52,17 +52,20 @@ async function createEvent(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const eventArray = await knex('trips_events')
-      .returning(['id', 'event_name', 'event_date', 'description'])
-      .insert({
-        trip_id: tripid,
-        event_name: eventName,
-        event_date: eventDate,
-        description,
-      });
+    const newEventId = (
+      await knex('trips_events').insert(
+        {
+          trip_id: tripid,
+          event_name: eventName,
+          event_date: eventDate,
+          description,
+        },
+        ['id']
+      )
+    )[0].id;
 
-    if (!eventArray.length) {
-      return res.status(500).json({ message: 'Internal Server Error' });
+    if (!newEventId) {
+      return res.status(500).json(ERROR.INTERNAL_SERVER_ERROR);
     }
 
     return res.sendStatus(201);
@@ -88,17 +91,19 @@ async function updateEvent(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const eventArray = await knex('trips_events')
-      .returning(['id', 'event_name', 'event_date', 'description'])
-      .where('id', eventid)
-      .update({
-        event_name: eventName,
-        event_date: eventDate,
-        description,
-      });
+    const updatedEventId = (
+      await knex('trips_events').where('id', eventid).update(
+        {
+          event_name: eventName,
+          event_date: eventDate,
+          description,
+        },
+        ['id']
+      )
+    )[0].id;
 
-    if (!eventArray.length) {
-      return res.status(500).json({ message: 'Internal Server Error' });
+    if (updatedEventId) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.sendStatus(200);
@@ -124,10 +129,10 @@ async function deleteEvent(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const deleted = await knex('trips_events').where('id', eventid).del(['id']);
+    const numDeleted = await knex('trips_events').where('id', eventid).del();
 
-    if (!deleted) {
-      return res.status(404).json({ message: 'item not found' });
+    if (!numDeleted) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.sendStatus(200);
