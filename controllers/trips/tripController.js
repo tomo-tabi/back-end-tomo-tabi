@@ -244,16 +244,16 @@ async function unlockTrip(req, res) {
 async function getIsLockedForUser(req, res) {
   try {
     const { userid } = req.body;
-    const { tripid } = req.body.tripid ? req.body : req.params;
+    const { tripid } = req.params;
 
     if (checkForUndefined(userid, tripid)) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const { owner_id, is_locked, id } = (
+    const { id, owner_id, is_locked } = (
       await knex('trips')
-        .where({ id: tripid })
-        .select(['owner_id', 'is_locked'])
+        .where('id', tripid)
+        .select(['id', 'owner_id', 'is_locked'])
     )[0];
 
     if (!id) {
@@ -270,7 +270,6 @@ async function getIsLockedForUser(req, res) {
 
     return res.status(200).json(LOCKED);
   } catch (error) {
-    console.error(error);
     handleInternalServerError(error, res);
   }
 }
