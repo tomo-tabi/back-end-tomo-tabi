@@ -54,25 +54,41 @@ async function getVotes(req, res) {
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
  * @returns {Response} returns an array of vote table objects containing
- * { tripVoteArray, numYesVotes, numNoVotes, numNotVoted }
+ * { [ { tripid } ], numOfYesVotes, numOfNoVotes, numNotVoted }
  */
 
 async function getTripVotes(req, res) {
   try {
+    // const { eventid } = req.params;
+    // const { tripid } = req.body;
     const { tripid } = req.params;
+    // console.log(eventid, tripid);
+
+    // if (checkForUndefined(eventid, tripid)) {
     if (checkForUndefined(tripid)) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
     const tripVoteArray = await knex('users_events_vote')
       .join('trips_events', 'trips_events_id', 'trips_events.id')
+      // .where('trips_events_id', eventid)
       .select(['users_events_vote.id', 'vote', 'trips_events_id'])
       .where({ 'trips_events.trip_id': tripid });
+
+    // const numUsersInTrip = (
+    //   await knex('users_trips').where('trip_id', tripid).count()
+    // )[0].count;
+
+    // const numYesVotes = tripVoteArray.filter(object => object.vote).length;
+
+    // const numNoVotes = tripVoteArray.filter(object => !object.vote).length;
+
+    // const numNotVoted = numUsersInTrip - numYesVotes - numNoVotes;
 
     if (!tripVoteArray.length) {
       return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
-
+    //
     return res
       .status(200)
       .json({ tripVoteArray, numYesVotes, numNoVotes, numNotVoted });
