@@ -11,6 +11,7 @@ router.use(authenticateToken);
 router.get('/', tripCtrl.getTrips);
 router.get('/users/:tripid', userToTrip, tripCtrl.getTripUsers);
 router.get('/:tripid/locked', userToTrip, tripCtrl.getIsLockedForUser);
+router.get('/:tripid/owner', userToTrip, tripCtrl.getUserIsOwner);
 router.post('/', tripCtrl.createTrip);
 router.put('/:tripid', userToTrip, exitOnLocked, tripCtrl.updateTrip);
 router.put('/:tripid/lock', isOwner, tripCtrl.lockTrip);
