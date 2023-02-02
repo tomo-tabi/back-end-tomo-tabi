@@ -8,7 +8,6 @@ const [LOCKED, UNLOCKED] = [true, false];
 
 /**
  * Respond to a GET request to API_URL/trip/
- * @todo #63 add limit version
  * @param  {Request}  req Request object
  * @param  {Response} res Response object
  * @returns {Response} response Object containing an array of trips associated with the userid
@@ -30,7 +29,7 @@ async function getTrips(req, res) {
       .orderBy('start_date', 'asc');
 
     if (!tripArray.length) {
-      return res.status(404).json({ message: 'not found' });
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.status(200).json(tripArray);
@@ -54,7 +53,7 @@ async function getTripUsers(req, res) {
       .where({ trip_id: tripid });
 
     if (!usersInTrip.length) {
-      return res.status(404).json({ message: 'not found' });
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.status(200).json(usersInTrip);
@@ -78,28 +77,25 @@ async function createTrip(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const tripArray = await knex.transaction(async trx => {
-      const tripInsert = await knex('trips')
-        .insert({
-          start_date: startDate,
-          end_date: endDate,
-          name,
-          owner_id: userid,
-        })
-        .returning('id')
-        .transacting(trx);
+    await knex.transaction(async trx => {
+      const tripid = (
+        await knex('trips')
+          .insert(
+            {
+              start_date: startDate,
+              end_date: endDate,
+              name,
+              owner_id: userid,
+            },
+            ['id']
+          )
+          .transacting(trx)
+      )[0].id;
 
       await knex('users_trips')
-        .returning('*')
-        .insert({ user_id: userid, trip_id: tripInsert[0].id })
+        .insert({ user_id: userid, trip_id: tripid })
         .transacting(trx);
-
-      return tripInsert;
     });
-
-    if (!tripArray.length) {
-      return res.status(500).json({ message: 'Internal Server Error' });
-    }
 
     return res.sendStatus(201);
   } catch (error) {
@@ -123,17 +119,19 @@ async function updateTrip(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const tripArray = await knex('trips')
-      .where({ id: tripid })
-      .update({
-        start_date: startDate,
-        end_date: endDate,
-        name,
-      })
-      .returning('*');
+    const updatedTripId = (
+      await knex('trips').where({ id: tripid }).update(
+        {
+          start_date: startDate,
+          end_date: endDate,
+          name,
+        },
+        ['id']
+      )
+    )[0].id;
 
-    if (!tripArray.length) {
-      return res.status(404).json({ message: 'item not found' });
+    if (!updatedTripId) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.sendStatus(200);
@@ -158,12 +156,12 @@ async function deleteTripFromUser(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const data = await knex('users_trips')
+    const numDeleted = await knex('users_trips')
       .where({ trip_id: tripid, user_id: userid })
-      .del(['id']);
+      .del();
 
-    if (!data.length) {
-      return res.status(404).json({ message: 'item not found' });
+    if (!numDeleted) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.sendStatus(200);
@@ -188,14 +186,14 @@ async function lockTrip(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const lockedid = (
+    const lockedId = (
       await knex('trips')
         .where({ id: tripid })
         .update({ is_locked: LOCKED }, ['id'])
     )[0].id;
 
-    if (!lockedid) {
-      return res.status(404).json({ message: 'item not found' });
+    if (!lockedId) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.sendStatus(200);
@@ -220,14 +218,14 @@ async function unlockTrip(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const lockedid = (
+    const lockedId = (
       await knex('trips')
         .where({ id: tripid })
         .update({ is_locked: UNLOCKED }, ['id'])
     )[0].id;
 
-    if (!lockedid) {
-      return res.status(404).json({ message: 'item not found' });
+    if (!lockedId) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.sendStatus(200);
@@ -252,11 +250,15 @@ async function getIsLockedForUser(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const { owner_id, is_locked } = (
+    const { owner_id, is_locked, id } = (
       await knex('trips')
         .where({ id: tripid })
         .select(['owner_id', 'is_locked'])
     )[0];
+
+    if (!id) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
+    }
 
     if (owner_id === userid) {
       return res.status(200).json(UNLOCKED);

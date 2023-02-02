@@ -30,7 +30,7 @@ async function getUser(req, res) {
       .where({ id: userid });
 
     if (!userArray.length) {
-      return res.status(404).json({ message: 'user information not found' });
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.status(200).json(userArray[0]);
@@ -56,29 +56,33 @@ async function login(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const userArray = await knex
-      .select(['id', 'username', 'email', 'password'])
-      .from('users')
-      .where({ email });
+    const {
+      id,
+      username,
+      email: db_email,
+      password: hashed_password,
+    } = (
+      await knex
+        .select(['id', 'username', 'email', 'password'])
+        .from('users')
+        .where({ email })
+    )[0];
 
-    if (!userArray.length) {
-      return res.status(404).json({ message: 'email not found' });
+    if (!id) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
-    const isValidPassword = await bcrypt.compare(
-      password,
-      userArray[0].password
-    );
+    const isValidPassword = await bcrypt.compare(password, hashed_password);
 
     if (!isValidPassword)
       return res.status(401).json({ message: 'incorrect password' });
 
-    const token = auth.createToken(userArray[0].id);
+    const token = auth.createToken(id);
 
     const loginObject = {
       token,
-      username: userArray[0].username,
-      email: userArray[0].email,
+      username,
+      email: db_email,
     };
 
     return res.status(200).json(loginObject);
@@ -103,22 +107,30 @@ async function signup(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const hash = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const userArray = await knex('users')
-      .returning(['id', 'username', 'email'])
-      .insert({
+    const {
+      id,
+      username: db_username,
+      email: db_email,
+    } = (
+      await knex('users').returning(['id', 'username', 'email']).insert({
         email,
-        password: hash,
+        password: hashedPassword,
         username,
-      });
+      })
+    )[0];
 
-    const token = auth.createToken(userArray[0].id);
+    if (!id) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
+    }
+
+    const token = auth.createToken(id);
 
     const loginObject = {
       token,
-      username: userArray[0].username,
-      email: userArray[0].email,
+      username: db_username,
+      email: db_email,
     };
 
     return res.status(201).json(loginObject);
@@ -142,16 +154,18 @@ async function putUser(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const userArray = await knex('users')
-      .returning(['email', 'username'])
-      .where({ id: userid })
-      .update({
-        email,
-        username,
-      });
+    const updatedUserId = (
+      await knex('users').where({ id: userid }).update(
+        {
+          email,
+          username,
+        },
+        ['id']
+      )
+    )[0].id;
 
-    if (!userArray.length) {
-      return res.status(500).json({ message: 'Internal server error' });
+    if (!updatedUserId) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.sendStatus(200);
@@ -168,12 +182,11 @@ async function putUser(req, res) {
  * @returns {Response} returns an http response containing a 200 status code
  */
 
-// eslint-disable-next-line no-unused-vars
 async function putPassword(req, res) {
   try {
-    const { OldPassword, password, userid, email } = req.body;
+    const { oldPassword, password, userid, email } = req.body;
 
-    if (checkForUndefined(password, OldPassword, email)) {
+    if (checkForUndefined(password, oldPassword, email)) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
@@ -187,12 +200,12 @@ async function putPassword(req, res) {
     }
 
     const isValidPassword = await bcrypt.compare(
-      OldPassword,
+      oldPassword,
       userArray[0].password
     );
 
     if (!isValidPassword) {
-      return res.status(401).json({ message: 'incorrect old password' })
+      return res.status(401).json({ message: 'incorrect old password' });
     }
 
     const hashNewPassword = await bcrypt.hash(password, saltRounds);
@@ -201,7 +214,7 @@ async function putPassword(req, res) {
       .returning(['id', 'username'])
       .where({ id: userid })
       .update({
-        password: hashNewPassword
+        password: hashNewPassword,
       });
 
     if (!NewUserArray.length) {

@@ -33,7 +33,7 @@ async function getExpenses(req, res) {
       .where({ trip_id: tripid });
 
     if (!expenseArray.length) {
-      return res.status(404).json({ message: 'Not found' });
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.status(200).json(expenseArray);
@@ -61,18 +61,20 @@ async function createExpense(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const expenseIdArray = await knex('expenses').insert(
-      {
-        user_id: purchaserid,
-        trip_id: tripid,
-        item_name: itemName,
-        money,
-      },
-      'id'
-    );
+    const newExpenseId = (
+      await knex('expenses').insert(
+        {
+          user_id: purchaserid,
+          trip_id: tripid,
+          item_name: itemName,
+          money,
+        },
+        'id'
+      )
+    )[0].id;
 
-    if (!expenseIdArray.length) {
-      return res.status(500).json({ message: 'Internal Server Error' });
+    if (!newExpenseId) {
+      return res.status(500).json(ERROR.INTERNAL_SERVER_ERROR);
     }
 
     return res.sendStatus(201);
@@ -93,25 +95,25 @@ async function updateExpense(req, res) {
   try {
     const { expenseid } = req.params;
     const { itemName, money, userid } = req.body;
-    let { purchaserid } = req.body;
-
-    purchaserid = purchaserid || userid;
+    const purchaserid = req.body.purchaserid || userid;
 
     if (checkForUndefined(purchaserid, itemName, money, expenseid)) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const expenseIdArray = await knex('expenses').where('id', expenseid).update(
-      {
-        item_name: itemName,
-        user_id: purchaserid,
-        money,
-      },
-      ['id']
-    );
+    const updatedExpenseId = (
+      await knex('expenses').where('id', expenseid).update(
+        {
+          item_name: itemName,
+          user_id: purchaserid,
+          money,
+        },
+        ['id']
+      )
+    )[0].id;
 
-    if (!expenseIdArray.length) {
-      return res.status(500).json({ message: 'Internal Server Error' });
+    if (!updatedExpenseId) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.sendStatus(200);
@@ -135,10 +137,10 @@ async function deleteExpense(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const deleted = await knex('expenses').where({ id: expenseid }).del();
+    const numDeleted = await knex('expenses').where({ id: expenseid }).del();
 
-    if (!deleted) {
-      return res.status(404).json({ message: 'item not found' });
+    if (!numDeleted) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.sendStatus(200);

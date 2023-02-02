@@ -31,7 +31,7 @@ async function getInvites(req, res) {
       .where({ receiver_id: userid, status: PENDING });
 
     if (!pendingInviteArray.length) {
-      return res.status(404).json({ message: 'no invites found' });
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.status(200).json(pendingInviteArray);
@@ -63,7 +63,7 @@ async function getSentInvites(req, res) {
       .where({ sender_id: userid, trip_id: tripid });
 
     if (!sentInviteArray.length) {
-      return res.status(404).json({ message: 'no invites found' });
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.status(200).json(sentInviteArray);
@@ -93,18 +93,20 @@ async function createInvite(req, res) {
       return res.status(400).json({ message: 'invite exists' });
     }
 
-    const inviteIdArray = await knex('invites').insert(
-      {
-        sender_id: userid,
-        receiver_id: receiverid,
-        trip_id: tripid,
-        status: PENDING,
-      },
-      'id'
-    );
+    const newInviteId = (
+      await knex('invites').insert(
+        {
+          sender_id: userid,
+          receiver_id: receiverid,
+          trip_id: tripid,
+          status: PENDING,
+        },
+        'id'
+      )
+    )[0].id;
 
-    if (!inviteIdArray.length) {
-      return res.status(500).json({ message: 'Internal Server Error' });
+    if (!newInviteId) {
+      return res.status(500).json(ERROR.INTERNAL_SERVER_ERROR);
     }
 
     return res.sendStatus(201);
@@ -130,13 +132,15 @@ async function acceptInvite(req, res) {
     }
 
     await knex.transaction(async trx => {
-      const tripid = await knex('invites')
-        .where('id', inviteid)
-        .update({ status: ACCEPTED }, ['trip_id'])
-        .transacting(trx);
+      const tripid = (
+        await knex('invites')
+          .where('id', inviteid)
+          .update({ status: ACCEPTED }, ['trip_id'])
+          .transacting(trx)
+      )[0].tripid;
 
       await knex('users_trips')
-        .insert({ user_id: userid, trip_id: tripid[0].trip_id })
+        .insert({ user_id: userid, trip_id: tripid })
         .transacting(trx);
     });
 
@@ -162,12 +166,14 @@ async function rejectInvite(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const inviteIdArray = await knex('invites')
-      .where('id', inviteid)
-      .update({ status: REJECTED }, ['id']);
+    const rejectedInviteId = (
+      await knex('invites')
+        .where('id', inviteid)
+        .update({ status: REJECTED }, ['id'])
+    )[0].id;
 
-    if (!inviteIdArray.length) {
-      return res.status(404).json({ message: 'item not found' });
+    if (!rejectedInviteId) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     return res.sendStatus(200);
@@ -191,9 +197,11 @@ async function deleteInvite(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const deleted = await knex('invites').where({ id: inviteid }).del();
+    const numDeleted = await knex('invites').where({ id: inviteid }).del();
 
-    if (!deleted) return res.status(404).json({ message: 'item not found' });
+    if (!numDeleted) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
+    }
 
     return res.sendStatus(200);
   } catch (error) {
