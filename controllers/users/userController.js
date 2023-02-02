@@ -168,52 +168,60 @@ async function putUser(req, res) {
  * @returns {Response} returns an http response containing a 200 status code
  */
 
-// eslint-disable-next-line no-unused-vars
 async function putPassword(req, res) {
   try {
-    const { OldPassword, password, userid, email } = req.body;
+    const { oldPassword, userid, password } = req.body;
 
-    if (checkForUndefined(password, OldPassword, email)) {
+    if (checkForUndefined(oldPassword, userid, password)) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const userArray = await knex
-      .select(['id', 'username', 'email', 'password'])
-      .from('users')
-      .where({ email });
+    const {
+      id,
+      username,
+      password: old_hashed_password,
+      email,
+    } = (
+      await knex
+        .from('users')
+        .where({ id: userid })
+        .select(['id', 'username', 'password', 'email'])
+    )[0];
 
-    if (!userArray.length) {
-      return res.status(404).json({ message: 'email not found' });
+    if (!id) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
     }
 
     const isValidPassword = await bcrypt.compare(
-      OldPassword,
-      userArray[0].password
+      oldPassword,
+      old_hashed_password
     );
 
     if (!isValidPassword) {
-      return res.status(401).json({ message: 'incorrect old password' })
+      return res.status(401).json(ERROR.UNAUTHORIZED);
     }
 
-    const hashNewPassword = await bcrypt.hash(password, saltRounds);
+    const newHashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const NewUserArray = await knex('users')
-      .returning(['id', 'username'])
-      .where({ id: userid })
-      .update({
-        password: hashNewPassword
-      });
+    const newUserId = (
+      await knex('users').where({ id: userid }).update(
+        {
+          password: newHashedPassword,
+        },
+        ['id']
+      )
+    )[0].id;
 
-    if (!NewUserArray.length) {
-      return res.status(500).json({ message: 'Internal server error' });
+    if (!newUserId) {
+      return res.status(500).json(INTERNAL_SERVER_ERROR);
     }
 
-    const token = auth.createToken(userArray[0].id);
+    const token = auth.createToken(id);
 
     const userObject = {
       token,
-      username: userArray[0].username,
-      email: userArray[0].email,
+      username,
+      email,
     };
 
     return res.status(200).json(userObject);
