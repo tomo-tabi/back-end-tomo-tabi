@@ -154,7 +154,12 @@ async function putUser(req, res) {
       return res.status(500).json({ message: 'Internal server error' });
     }
 
-    return res.sendStatus(200);
+    const loginObject = {
+      username: userArray[0].username,
+      email: userArray[0].email,
+    };
+
+    return res.status(200).json(loginObject);
   } catch (error) {
     return handleInternalServerError(error, res);
   }
