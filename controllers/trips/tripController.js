@@ -22,9 +22,10 @@ async function getTrips(req, res) {
     }
 
     const tripArray = await knex
-      .select('trips.id', 'start_date', 'end_date', 'name')
+      .select('trips.id', 'start_date', 'end_date', 'name', "is_locked", "users.username")
       .from('trips')
       .join('users_trips', 'trips.id', 'users_trips.trip_id')
+      .join("users", "trips.owner_id", "users.id")
       .where('users_trips.user_id', userid)
       .orderBy('start_date', 'asc');
 
