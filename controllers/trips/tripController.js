@@ -259,14 +259,14 @@ async function getIsLockedForUser(req, res) {
     )[0];
 
     if (owner_id === userid) {
-      return res.status(200).json(false);
+      return res.status(200).json({is_locked: is_locked, owner:true});
     }
 
     if (!is_locked) {
-      return res.status(200).json(false);
+      return res.status(200).json({is_locked: is_locked, owner:false});
     }
 
-    return res.status(200).json(true);
+    return res.status(200).json({is_locked: is_locked, owner:false});
   } catch (error) {
     console.error(error);
     handleInternalServerError(error, res);
