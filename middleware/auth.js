@@ -22,9 +22,15 @@ function authenticateToken(req, res, next) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
     const token = req.headers.authorization.split(' ')[1];
+
     const { userid } = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    req.body.userid = userid;
-    next();
+
+    if (userid) {
+      req.body.userid = userid;
+      return next();
+    }
+
+    return res.sendStatus(401);
   } catch (error) {
     return handleInternalServerError(error, res);
   }
