@@ -3,6 +3,7 @@ const {
   handleInternalServerError,
   checkForUndefined,
 } = require('../errors/errorController');
+const knexQuery = require('./knexQuery');
 const ERROR = require('../errors/errorConstants');
 
 /**
@@ -20,17 +21,7 @@ async function getExpenses(req, res) {
       return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
     }
 
-    const expenseArray = await knex('expenses')
-      .join('users', 'users.id', 'user_id')
-      .select([
-        'expenses.id',
-        'item_name',
-        'money',
-        'trip_id',
-        'email',
-        'username',
-      ])
-      .where({ trip_id: tripid });
+    const expenseArray = await knexQuery.getExpenses(tripid);
 
     if (!expenseArray.length) {
       return res.status(404).json({ message: 'Not found' });
