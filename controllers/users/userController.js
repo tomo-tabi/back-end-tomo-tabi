@@ -245,7 +245,51 @@ async function putPassword(req, res) {
 
 // eslint-disable-next-line no-unused-vars
 async function deleteUser(req, res) {
-  // stub
+
+  try {
+    const { userid, password } = req.body;
+
+    if (checkForUndefined(userid, password)) {
+      return res.status(400).json(ERROR.UNDEFINED_VARIABLE);
+    }
+
+    const {
+      id,
+      password: hashed_password,
+    } = (
+      await knex
+        .from('users')
+        .where({ id: userid })
+        .select(['id', 'password'])
+    )[0];
+
+
+    if (!id) {
+      return res.status(404).json(ERROR.ITEM_NOT_FOUND);
+    }
+
+    const isValidPassword = await bcrypt.compare(
+      password,
+      hashed_password
+    );
+
+
+    if (!isValidPassword) {
+      return res.status(401).json(ERROR.UNAUTHORIZED);
+    }
+
+    //Delete User from DB
+
+    await knex
+        .from('users')
+        .where({ id: userid })
+        .select(['id', 'username', 'password', 'email'])
+        .del()
+
+    return res.status(200).json({ message: 'user deleted' });
+  } catch (error) {
+    return handleInternalServerError(error, res);
+  }
 }
 
 module.exports = {
